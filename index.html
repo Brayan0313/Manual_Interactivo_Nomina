@@ -258,13 +258,20 @@ const PROCESOS = [
     ]
   },
   {
-    id: "liquidacion", nombre: "Liquidación de contrato",
-    resumen: "Retiro de un empleado y pago final.",
+     id: "productividad-cedi", nombre: "Productividad CEDI",
+    resumen: "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPEC.",
     pasos: [
-      { titulo: "Confirmar la fecha de retiro", texto: "Valida la carta de renuncia o de terminación y la fecha de último día laboral." },
-      { titulo: "Calcular prestaciones", texto: "Calcula cesantías, intereses, prima y vacaciones pendientes hasta la fecha de retiro." },
-      { bloque: "plano", params: { novedad: "liquidación", columna: "Valor liquidación", archivo: "plano_LIQ.xlsx" } },
-      { bloque: "subirPlataforma", params: { menu: "Pagos > Liquidaciones", archivo: "plano_LIQ.xlsx", total: "el neto a pagar de la liquidación" } }
+      { titulo: "Preparar archivo de trabajo", texto: "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico." },
+      { bloque: "plano", params: { novedad: "Productividad CEDI", columna: "Estado del colaborador" } },
+      { bloque: "plano", params: { novedad: "Productividad CEDI", columna: "Empresa del colaborador" } },
+      { titulo: "Filtrar valores de pago", texto: "Filtrar los registros cuyo valor de pago sea diferente de cero." },
+      { bloque: "gestionTemporales" },
+      { titulo: "Filtrar colaboradores vinculados", texto: "Filtrar los colaboradores vinculados de Mobility." },
+      { titulo: "Redondear valores", texto: "Redondear los valores de pago a cero decimales." },
+      { bloque: "determinacionPeriodoNomina" },
+      { bloque: "planoPagosDeducciones", params: { concepto: "112 - Productividad" } },
+      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "validacionPosteriorCarga" }
     ]
   }
 ];
