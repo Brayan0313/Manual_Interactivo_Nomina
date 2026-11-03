@@ -72,22 +72,22 @@
    Lo que va entre {llaves} es un parámetro que cada proceso rellena. */
 const BLOQUES = {
   buscarv: {
-    titulo: "Validación de colaboradores mediante BUSCARV",
-               texto: `Crear las columnas donde se mostrará la información a consultar.
+    titulo: "Validación de colaboradores mediante BUSCARV: {columna}",
+    texto: `Crear las columnas donde se mostrará la información a consultar.
 
 1. Insertar la función BUSCARV.
 2. Configurar los parámetros:
    - Valor buscado: cédula del colaborador.
    - Matriz de búsqueda: base de datos general.
-   - Indicador de columna: según el dato requerido (Estado, Empresa, Salario, etc.).
+   - Indicador de columna: el que corresponda a {columna}.
    - Coincidencia: FALSO.
 3. Arrastrar la fórmula hasta el último registro.
 4. Verificar que todos los registros retornen información válida.
 5. Aplicar filtros para identificar posibles errores o registros sin coincidencias.
 6. Realizar la validación correspondiente según el dato consultado.`,
-      imagen: ""
-},
-    gestionTemporales: {
+    imagen: ""
+  },
+  gestionTemporales: {
     titulo: "Gestión de personal temporal",
     texto: `Identificar colaboradores temporales y trasladar sus novedades al archivo compartido de temporales.
 
@@ -124,7 +124,7 @@ Paso a paso:
 3. Completar los campos requeridos:
    - Empresa.
    - Cédula.
-   - Concepto.
+   - Concepto: {concepto}.
    - Valor.
    - Período.
 4. Verificar que los valores se encuentren correctamente diligenciados.
@@ -134,7 +134,7 @@ Paso a paso:
 8. Asignar una nomenclatura corta y estandarizada.`,
     imagen: ""
   },
-    cargaPlanoSIPEC: {
+  cargaPlanoSIPEC: {
     titulo: "Carga de archivo plano en SIPEC",
     texto: `Importar novedades masivas al sistema SIPEC mediante archivo plano.
 
@@ -165,7 +165,7 @@ Paso a paso:
     - Seleccionar Actualizar.`,
     imagen: ""
   },
-    validacionPosteriorCarga: {
+  validacionPosteriorCarga: {
     titulo: "Validación posterior a la carga",
     texto: `Confirmar que la novedad quedó registrada correctamente en SIPEC.
 
@@ -204,7 +204,7 @@ Paso a paso:
 8. Consultar nuevamente la novedad para confirmar su almacenamiento.`,
     imagen: ""
   },
-    depuracionBasesTrabajo: {
+  depuracionBasesTrabajo: {
     titulo: "Depuración de bases de trabajo",
     texto: `Garantizar que la información utilizada para el cargue solo contenga registros válidos.
 
@@ -221,7 +221,7 @@ Paso a paso:
 5. Guardar la versión depurada.`,
     imagen: ""
   },
-    determinacionPeriodoNomina: {
+  determinacionPeriodoNomina: {
     titulo: "Determinación de período de nómina",
     texto: `Definir el período que será utilizado en la novedad o archivo plano.
 
@@ -233,37 +233,20 @@ Paso a paso:
 4. Registrar el período en el archivo plano o novedad.
 5. Validar que coincida con el período activo en SIPEC.`,
     imagen: ""
-  },
+  }
 };
 
 /* PROCESOS: cada paso es un paso propio (titulo + texto)
-   o una llamada a un bloque: { bloque: "nombre", params: {...} } */
+   o una llamada a un bloque: { bloque: "nombre", params: {...} }
+   IMPORTANTE: el nombre después de "bloque:" debe existir en BLOQUES, escrito igual. */
 const PROCESOS = [
   {
-    id: "horas-extras", nombre: "Registro de horas extras",
-    resumen: "Desde la novedad reportada hasta el pago.",
-    pasos: [
-      { titulo: "Recibir la novedad", texto: "Revisa que el reporte de horas extras llegue firmado por el jefe de área antes del {fechaCorte}." },
-      { bloque: "buscarv", params: { novedad: "horas extras", columna: "Valor HE", archivo: "plano_HE.xlsx" } },
-      { bloque: "subirPlataforma", params: { menu: "Novedades > Horas extras", archivo: "plano_HE.xlsx", total: "el valor de la liquidación de HE" } }
-    ]
-  },
-  {
-    id: "bonificacion", nombre: "Bonificación",
-    resumen: "Cálculo y pago de bonificaciones.",
-    pasos: [
-      { titulo: "Calcular el valor", texto: "Toma el porcentaje aprobado y multiplícalo por el salario base de cada empleado." },
-      { bloque: "plano", params: { novedad: "bonificación", columna: "Valor bonificación", archivo: "plano_BON.xlsx" } },
-      { bloque: "subirPlataforma", params: { menu: "Novedades > Bonificaciones", archivo: "plano_BON.xlsx", total: "la suma de bonificaciones aprobadas" } }
-    ]
-  },
-  {
-     id: "productividad-cedi", nombre: "Productividad CEDI",
+    id: "productividad-cedi", nombre: "Productividad CEDI",
     resumen: "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPEC.",
     pasos: [
       { titulo: "Preparar archivo de trabajo", texto: "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico." },
-      { bloque: "plano", params: { novedad: "Productividad CEDI", columna: "Estado del colaborador" } },
-      { bloque: "plano", params: { novedad: "Productividad CEDI", columna: "Empresa del colaborador" } },
+      { bloque: "buscarv", params: { columna: "Estado del colaborador" } },
+      { bloque: "buscarv", params: { columna: "Empresa del colaborador" } },
       { titulo: "Filtrar valores de pago", texto: "Filtrar los registros cuyo valor de pago sea diferente de cero." },
       { bloque: "gestionTemporales" },
       { titulo: "Filtrar colaboradores vinculados", texto: "Filtrar los colaboradores vinculados de Mobility." },
@@ -274,6 +257,8 @@ const PROCESOS = [
       { bloque: "validacionPosteriorCarga" }
     ]
   }
+  /* Para agregar otro proceso: pon una coma después de la llave } de arriba
+     y copia aquí un proceso nuevo con otro id. */
 ];
 
 /* =====================================================================
@@ -296,6 +281,9 @@ function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
   if (paso.bloque) {                       // paso que usa un bloque reutilizable
     const b = BLOQUES[paso.bloque];
+    // Si el nombre del bloque no existe, avisa en vez de romper la página
+    if (!b) return `<li><h3>Falta el bloque: ${limpiar(paso.bloque)}</h3>
+      <p>Revisa que este nombre exista en BLOQUES, escrito igual.</p></li>`;
     titulo = rellenar(b.titulo, paso.params);
     texto  = rellenar(b.texto, paso.params);
     imagen = b.imagen;
@@ -334,7 +322,7 @@ function verMenu() {
   buscador.addEventListener("input", filtrar);
   lista.addEventListener("click", e => {
     const b = e.target.closest("button[data-id]");
-    if (b) location.hash = b.dataset.id;   // cambia la dirección: #horas-extras
+    if (b) location.hash = b.dataset.id;   // cambia la dirección: #productividad-cedi
   });
   filtrar();
 }
@@ -359,9 +347,8 @@ function navegar() {
 window.addEventListener("hashchange", navegar);
 navegar();
 
-/* NOTA SOBRE IMÁGENES: en tu computador puedes usar archivos junto al HTML,
-   por ejemplo imagen: "img/plano.png". En esta vista publicada solo funcionan
-   imágenes incrustadas (data URI). */
+/* NOTA SOBRE IMÁGENES: guarda las imágenes en una carpeta img/ dentro del
+   repositorio y escribe, por ejemplo, imagen: "img/plano.png". */
 </script>
 </body>
 </html>
