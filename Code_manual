@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manual de nómina</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== 1. COLORES (variables): cambia aquí y cambia todo el manual ===== */
+  :root {
+    --fondo: #f3f6f8; --tarjeta: #ffffff; --texto: #12263a; --suave: #5b6b7a;
+    --linea: #d5dee6; --acento: #0f766e; --acento-texto: #ffffff;
+    --param-fondo: #fef3c7; --param-texto: #7c4a03;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fondo: #0e1a26; --tarjeta: #162536; --texto: #e6eef5; --suave: #9db0c0;
+      --linea: #2a3d50; --acento: #2dd4bf; --acento-texto: #06231f;
+      --param-fondo: #4a3510; --param-texto: #fcd34d;
+    }
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--fondo); color: var(--texto);
+    font: 16px/1.6 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 18px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 8px 0 6px; }
+  h2 { font-size: 1.35rem; margin: 0 0 4px; }
+  p.sub { color: var(--suave); margin: 0 0 20px; }
+  :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+
+  /* ===== 2. MENÚ PRINCIPAL ===== */
+  #buscador { width: 100%; box-sizing: border-box; padding: 12px 14px; font: inherit; color: inherit;
+    background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; margin-bottom: 14px; }
+  .lista { display: grid; gap: 10px; }
+  .proceso { text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100%;
+    background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; padding: 14px 16px; }
+  .proceso:hover { border-color: var(--acento); }
+  .proceso strong { display: block; }
+  .proceso span { color: var(--suave); font-size: .92rem; }
+  .vacio { color: var(--suave); padding: 12px 2px; }
+
+  /* ===== 3. PASO A PASO ===== */
+  .volver { background: none; border: 0; color: var(--acento); font: inherit; font-weight: 600;
+    cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
+  ol.pasos { list-style: none; counter-reset: p; padding: 0; margin: 20px 0 0; }
+  ol.pasos > li { counter-increment: p; position: relative; background: var(--tarjeta);
+    border: 1.5px solid var(--linea); border-radius: 10px; padding: 14px 16px 14px 56px; margin-bottom: 12px; }
+  ol.pasos > li::before { content: counter(p); position: absolute; left: 14px; top: 14px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--acento); color: var(--acento-texto); font-weight: 700;
+    display: grid; place-items: center; font-size: .9rem; }
+  .pasos h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .pasos p { margin: 0; }
+  .comun { display: inline-block; font-size: .8rem; color: var(--suave); margin-top: 8px; }
+  .param { background: var(--param-fondo); color: var(--param-texto); border-radius: 5px;
+    padding: 0 6px; font-weight: 600; }
+  .imagen { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
+  .marcador { margin-top: 10px; border: 1.5px dashed var(--linea); border-radius: 8px; padding: 22px 12px;
+    text-align: center; color: var(--suave); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+/* =====================================================================
+   DATOS DEL MANUAL  (aquí es donde tú editas el contenido)
+   ===================================================================== */
+
+/* BLOQUES REUTILIZABLES: se escriben UNA sola vez.
+   Lo que va entre {llaves} es un parámetro que cada proceso rellena. */
+const BLOQUES = {
+  plano: {
+    titulo: "Generar el plano de {novedad}",
+    texto:  "Abre la plantilla de plano y llena la columna {columna}. Guarda el archivo con el nombre {archivo}.",
+    imagen: ""   // aquí puedes poner la imagen (ver nota al final)
+  },
+  subirPlataforma: {
+    titulo: "Subir el plano a la plataforma de pago",
+    texto:  "Ingresa a la plataforma, entra al menú {menu} y carga el archivo {archivo}. Verifica que el total sea {total}.",
+    imagen: ""
+  }
+};
+
+/* PROCESOS: cada paso es un paso propio (titulo + texto)
+   o una llamada a un bloque: { bloque: "nombre", params: {...} } */
+const PROCESOS = [
+  {
+    id: "horas-extras", nombre: "Registro de horas extras",
+    resumen: "Desde la novedad reportada hasta el pago.",
+    pasos: [
+      { titulo: "Recibir la novedad", texto: "Revisa que el reporte de horas extras llegue firmado por el jefe de área antes del {fechaCorte}." },
+      { bloque: "plano", params: { novedad: "horas extras", columna: "Valor HE", archivo: "plano_HE.xlsx" } },
+      { bloque: "subirPlataforma", params: { menu: "Novedades > Horas extras", archivo: "plano_HE.xlsx", total: "el valor de la liquidación de HE" } }
+    ]
+  },
+  {
+    id: "bonificacion", nombre: "Bonificación",
+    resumen: "Cálculo y pago de bonificaciones.",
+    pasos: [
+      { titulo: "Calcular el valor", texto: "Toma el porcentaje aprobado y multiplícalo por el salario base de cada empleado." },
+      { bloque: "plano", params: { novedad: "bonificación", columna: "Valor bonificación", archivo: "plano_BON.xlsx" } },
+      { bloque: "subirPlataforma", params: { menu: "Novedades > Bonificaciones", archivo: "plano_BON.xlsx", total: "la suma de bonificaciones aprobadas" } }
+    ]
+  },
+  {
+    id: "liquidacion", nombre: "Liquidación de contrato",
+    resumen: "Retiro de un empleado y pago final.",
+    pasos: [
+      { titulo: "Confirmar la fecha de retiro", texto: "Valida la carta de renuncia o de terminación y la fecha de último día laboral." },
+      { titulo: "Calcular prestaciones", texto: "Calcula cesantías, intereses, prima y vacaciones pendientes hasta la fecha de retiro." },
+      { bloque: "plano", params: { novedad: "liquidación", columna: "Valor liquidación", archivo: "plano_LIQ.xlsx" } },
+      { bloque: "subirPlataforma", params: { menu: "Pagos > Liquidaciones", archivo: "plano_LIQ.xlsx", total: "el neto a pagar de la liquidación" } }
+    ]
+  }
+];
+
+/* =====================================================================
+   CÓDIGO (lo que hace que todo funcione)
+   ===================================================================== */
+const app = document.getElementById("app");
+
+/* Escapa texto para que nunca se interprete como HTML (buena práctica de seguridad) */
+const limpiar = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Reemplaza cada {parametro} por su valor, resaltado en amarillo.
+   Si un parámetro no existe, deja visible {nombre} para que notes el error. */
+function rellenar(plantilla, params = {}) {
+  return limpiar(plantilla).replace(/\{(\w+)\}/g, (_, clave) =>
+    clave in params ? `<span class="param">${limpiar(params[clave])}</span>` : `{${clave}}`);
+}
+
+/* Convierte un paso (propio o de bloque) en un <li> */
+function pintarPaso(paso) {
+  let titulo, texto, imagen = "", etiqueta = "";
+  if (paso.bloque) {                       // paso que usa un bloque reutilizable
+    const b = BLOQUES[paso.bloque];
+    titulo = rellenar(b.titulo, paso.params);
+    texto  = rellenar(b.texto, paso.params);
+    imagen = b.imagen;
+    etiqueta = '<span class="comun">Paso común a varios procesos</span>';
+  } else {                                 // paso propio del proceso
+    titulo = rellenar(paso.titulo, paso.params);
+    texto  = rellenar(paso.texto, paso.params);
+    imagen = paso.imagen || "";
+  }
+  const media = imagen
+    ? `<img class="imagen" src="${imagen}" alt="Captura del paso">`
+    : `<div class="marcador">Aquí va la captura de pantalla</div>`;
+  return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
+}
+
+/* PANTALLA 1: menú con buscador */
+function verMenu() {
+  app.innerHTML = `
+    <h1>Manual de nómina</h1>
+    <p class="sub">¿De qué proceso quieres saber?</p>
+    <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra" aria-label="Buscar">
+    <div class="lista" id="lista"></div>`;
+  const lista = document.getElementById("lista");
+  const buscador = document.getElementById("buscador");
+
+  function filtrar() {
+    const q = buscador.value.toLowerCase();
+    // Busca en nombre, resumen y también dentro del texto de los pasos
+    const hallados = PROCESOS.filter(p =>
+      (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
+    lista.innerHTML = hallados.length
+      ? hallados.map(p => `<button class="proceso" data-id="${p.id}">
+          <strong>${limpiar(p.nombre)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
+      : '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra, por ejemplo: plano o plataforma.</p>';
+  }
+  buscador.addEventListener("input", filtrar);
+  lista.addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]");
+    if (b) location.hash = b.dataset.id;   // cambia la dirección: #horas-extras
+  });
+  filtrar();
+}
+
+/* PANTALLA 2: paso a paso de un proceso */
+function verProceso(p) {
+  app.innerHTML = `
+    <button class="volver" id="volver">‹ Volver al menú</button>
+    <h2>${limpiar(p.nombre)}</h2>
+    <p class="sub">${limpiar(p.resumen)}</p>
+    <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
+  document.getElementById("volver").onclick = () => { location.hash = ""; };
+  window.scrollTo(0, 0);
+}
+
+/* "Router": decide qué pantalla mostrar según la dirección (#...) */
+function navegar() {
+  const id = location.hash.slice(1);
+  const p = PROCESOS.find(x => x.id === id);
+  p ? verProceso(p) : verMenu();
+}
+window.addEventListener("hashchange", navegar);
+navegar();
+
+/* NOTA SOBRE IMÁGENES: en tu computador puedes usar archivos junto al HTML,
+   por ejemplo imagen: "img/plano.png". En esta vista publicada solo funcionan
+   imágenes incrustadas (data URI). */
+</script>
+</body>
+</html>
