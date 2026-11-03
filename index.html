@@ -72,10 +72,21 @@
    Lo que va entre {llaves} es un parámetro que cada proceso rellena. */
 const BLOQUES = {
   plano: {
-    titulo: "Generar el plano de {novedad}",
-    texto:  "Abre la plantilla de plano y llena la columna {columna}. Guarda el archivo con el nombre {archivo}.",
-    imagen: ""   // aquí puedes poner la imagen (ver nota al final)
-  },
+    titulo: "Validación de colaboradores mediante BUSCARV",
+               texto: `Crear las columnas donde se mostrará la información a consultar.
+
+1. Insertar la función BUSCARV.
+2. Configurar los parámetros:
+   - Valor buscado: cédula del colaborador.
+   - Matriz de búsqueda: base de datos general.
+   - Indicador de columna: según el dato requerido (Estado, Empresa, Salario, etc.).
+   - Coincidencia: FALSO.
+3. Arrastrar la fórmula hasta el último registro.
+4. Verificar que todos los registros retornen información válida.
+5. Aplicar filtros para identificar posibles errores o registros sin coincidencias.
+6. Realizar la validación correspondiente según el dato consultado.`,
+      imagen: ""
+},
   subirPlataforma: {
     titulo: "Subir el plano a la plataforma de pago",
     texto:  "Ingresa a la plataforma, entra al menú {menu} y carga el archivo {archivo}. Verifica que el total sea {total}.",
