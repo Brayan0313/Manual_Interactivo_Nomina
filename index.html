@@ -256,7 +256,26 @@ const PROCESOS = [
       { bloque: "cargaPlanoSIPEC" },
       { bloque: "validacionPosteriorCarga" }
     ]
-  }
+  },
+  {
+  id: "horas-extras-masivo", nombre: "Horas Extras Masivo",
+  resumen: "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPEC.",
+  pasos: [
+    { titulo: "Descargar archivos", texto: "Descargar los archivos de horas laboradas de Antioquia y Cartagena." },
+    { titulo: "Preparar información", texto: "Bloquear las fechas ya procesadas en cada archivo y consolidar la información en un archivo de trabajo." },
+    { bloque: "buscarv", params: { novedad: "Horas Extras", columna: "Estado del colaborador" } },
+    { bloque: "buscarv", params: { novedad: "Horas Extras", columna: "Salario del colaborador" } },
+    { bloque: "gestionTemporales" },
+    { bloque: "depuracionBasesTrabajo" },
+    { titulo: "Calcular horas extras y recargos", texto: "Calcular RN, HED, HEN, FD, FN, HEDF y HEDN." },
+    { titulo: "Calcular Permiso No Remunerado", texto: "Calcular el valor correspondiente al Permiso No Remunerado (PNR)." },
+    { titulo: "Calcular Auxilio de Movilidad", texto: "Calcular el valor correspondiente al Auxilio de Movilidad." },
+    { titulo: "Aplicar redondeo", texto: "Aplicar el redondeo correspondiente al PNR." },
+    { bloque: "planoPagosDeducciones", params: { concepto: "Horas Extras" } },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
   /* Para agregar otro proceso: pon una coma después de la llave } de arriba
      y copia aquí un proceso nuevo con otro id. */
 ];
