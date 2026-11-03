@@ -29,7 +29,7 @@
   h2 { font-size: 1.35rem; margin: 0 0 4px; }
   p.sub { color: var(--suave); margin: 0 0 20px; }
   :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
-
+ 
   /* ===== 2. MENÚ PRINCIPAL ===== */
   #buscador { width: 100%; box-sizing: border-box; padding: 12px 14px; font: inherit; color: inherit;
     background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; margin-bottom: 14px; }
@@ -40,7 +40,7 @@
   .proceso strong { display: block; }
   .proceso span { color: var(--suave); font-size: .92rem; }
   .vacio { color: var(--suave); padding: 12px 2px; }
-
+ 
   /* ===== 3. PASO A PASO ===== */
   .volver { background: none; border: 0; color: var(--acento); font: inherit; font-weight: 600;
     cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
@@ -62,19 +62,19 @@
 </head>
 <body>
 <main id="app"></main>
-
+ 
 <script>
 /* =====================================================================
    DATOS DEL MANUAL  (aquí es donde tú editas el contenido)
    ===================================================================== */
-
+ 
 /* BLOQUES REUTILIZABLES: se escriben UNA sola vez.
    Lo que va entre {llaves} es un parámetro que cada proceso rellena. */
 const BLOQUES = {
   buscarv: {
     titulo: "Validación de colaboradores mediante BUSCARV: {columna}",
     texto: `Crear las columnas donde se mostrará la información a consultar.
-
+ 
 1. Insertar la función BUSCARV.
 2. Configurar los parámetros:
    - Valor buscado: cédula del colaborador.
@@ -90,9 +90,9 @@ const BLOQUES = {
   gestionTemporales: {
     titulo: "Gestión de personal temporal",
     texto: `Identificar colaboradores temporales y trasladar sus novedades al archivo compartido de temporales.
-
+ 
 Paso a paso:
-
+ 
 1. Aplicar filtros sobre la columna Empresa/Nómina.
 2. Identificar los temporales:
    - AHORA S.A.S.
@@ -105,7 +105,7 @@ Paso a paso:
 6. Pegar la información.
 7. Guardar el archivo.
 8. Continuar el proceso únicamente con personal vinculado.
-
+ 
 Utilizado en:
 - Productividad CEDI.
 - Horas Extras.
@@ -116,9 +116,9 @@ Utilizado en:
   planoPagosDeducciones: {
     titulo: "Construcción de archivo plano de Pagos y Deducciones",
     texto: `Preparar la información para su importación masiva en SIPEC utilizando el formato Pagos y Deducciones.
-
+ 
 Paso a paso:
-
+ 
 1. Filtrar los registros con valor diferente de cero.
 2. Abrir el archivo plantilla correspondiente.
 3. Completar los campos requeridos:
@@ -137,9 +137,9 @@ Paso a paso:
   cargaPlanoSIPEC: {
     titulo: "Carga de archivo plano en SIPEC",
     texto: `Importar novedades masivas al sistema SIPEC mediante archivo plano.
-
+ 
 Paso a paso:
-
+ 
 1. Ingresar a SIPEC con las credenciales correspondientes.
 2. Abrir la opción Exports-SIPE.
 3. Acceder a la carpeta de planos de la empresa.
@@ -168,9 +168,9 @@ Paso a paso:
   validacionPosteriorCarga: {
     titulo: "Validación posterior a la carga",
     texto: `Confirmar que la novedad quedó registrada correctamente en SIPEC.
-
+ 
 Paso a paso:
-
+ 
 1. Ingresar al módulo de consulta de la novedad correspondiente.
 2. Seleccionar Criterio.
 3. Consultar un colaborador aleatorio incluido en el cargue.
@@ -187,9 +187,9 @@ Paso a paso:
   registroManualSIPEC: {
     titulo: "Registro manual de novedades en SIPEC",
     texto: `Registrar una novedad individual directamente en SIPEC cuando no se utilice cargue masivo.
-
+ 
 Paso a paso:
-
+ 
 1. Ingresar a SIPEC.
 2. Abrir el módulo correspondiente a la novedad.
 3. Ingresar la cédula del colaborador.
@@ -207,9 +207,9 @@ Paso a paso:
   depuracionBasesTrabajo: {
     titulo: "Depuración de bases de trabajo",
     texto: `Garantizar que la información utilizada para el cargue solo contenga registros válidos.
-
+ 
 Paso a paso:
-
+ 
 1. Duplicar la hoja original.
 2. Conservar una copia como respaldo.
 3. Eliminar:
@@ -224,9 +224,9 @@ Paso a paso:
   determinacionPeriodoNomina: {
     titulo: "Determinación de período de nómina",
     texto: `Definir el período que será utilizado en la novedad o archivo plano.
-
+ 
 Paso a paso:
-
+ 
 1. Identificar la fecha del proceso.
 2. Determinar la quincena correspondiente.
 3. Verificar el número de período dentro de la secuencia anual (01 a 24).
@@ -235,7 +235,7 @@ Paso a paso:
     imagen: ""
   }
 };
-
+ 
 /* PROCESOS: cada paso es un paso propio (titulo + texto)
    o una llamada a un bloque: { bloque: "nombre", params: {...} }
    IMPORTANTE: el nombre después de "bloque:" debe existir en BLOQUES, escrito igual. */
@@ -260,22 +260,22 @@ const PROCESOS = [
   /* Para agregar otro proceso: pon una coma después de la llave } de arriba
      y copia aquí un proceso nuevo con otro id. */
 ];
-
+ 
 /* =====================================================================
    CÓDIGO (lo que hace que todo funcione)
    ===================================================================== */
 const app = document.getElementById("app");
-
+ 
 /* Escapa texto para que nunca se interprete como HTML (buena práctica de seguridad) */
 const limpiar = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
+ 
 /* Reemplaza cada {parametro} por su valor, resaltado en amarillo.
    Si un parámetro no existe, deja visible {nombre} para que notes el error. */
 function rellenar(plantilla, params = {}) {
   return limpiar(plantilla).replace(/\{(\w+)\}/g, (_, clave) =>
     clave in params ? `<span class="param">${limpiar(params[clave])}</span>` : `{${clave}}`);
 }
-
+ 
 /* Convierte un paso (propio o de bloque) en un <li> */
 function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
@@ -298,7 +298,7 @@ function pintarPaso(paso) {
     : `<div class="marcador">Aquí va la captura de pantalla</div>`;
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
-
+ 
 /* PANTALLA 1: menú con buscador */
 function verMenu() {
   app.innerHTML = `
@@ -308,7 +308,7 @@ function verMenu() {
     <div class="lista" id="lista"></div>`;
   const lista = document.getElementById("lista");
   const buscador = document.getElementById("buscador");
-
+ 
   function filtrar() {
     const q = buscador.value.toLowerCase();
     // Busca en nombre, resumen y también dentro del texto de los pasos
@@ -326,7 +326,7 @@ function verMenu() {
   });
   filtrar();
 }
-
+ 
 /* PANTALLA 2: paso a paso de un proceso */
 function verProceso(p) {
   app.innerHTML = `
@@ -337,7 +337,7 @@ function verProceso(p) {
   document.getElementById("volver").onclick = () => { location.hash = ""; };
   window.scrollTo(0, 0);
 }
-
+ 
 /* "Router": decide qué pantalla mostrar según la dirección (#...) */
 function navegar() {
   const id = location.hash.slice(1);
@@ -346,9 +346,10 @@ function navegar() {
 }
 window.addEventListener("hashchange", navegar);
 navegar();
-
+ 
 /* NOTA SOBRE IMÁGENES: guarda las imágenes en una carpeta img/ dentro del
    repositorio y escribe, por ejemplo, imagen: "img/plano.png". */
 </script>
 </body>
 </html>
+ 
