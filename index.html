@@ -268,10 +268,47 @@ const PROCESOS = [
     { bloque: "gestionTemporales" },
     { bloque: "depuracionBasesTrabajo" },
     { titulo: "Calcular horas extras y recargos", texto: "Calcular RN, HED, HEN, FD, FN, HEDF y HEDN." },
-    { titulo: "Calcular Permiso No Remunerado", texto: "Calcular el valor correspondiente al Permiso No Remunerado (PNR)." },
-    { titulo: "Calcular Auxilio de Movilidad", texto: "Calcular el valor correspondiente al Auxilio de Movilidad." },
+    { titulo: "Calcular Permiso No Remunerado", texto: "Calcular el valor correspondiente al Permiso No Remunerado (PNR).(USAR PARA EL PROCESO DE PERMISO NO REMUNERADO)" },
+    { titulo: "Calcular Auxilio de Movilidad", texto: "Calcular el valor correspondiente al Auxilio de Movilidad.(USAR PARA EL PROCESO DE AUXILIO DE MOVILIDAD MÁSIVO)" },
     { titulo: "Aplicar redondeo", texto: "Aplicar el redondeo correspondiente al PNR." },
     { bloque: "planoPagosDeducciones", params: { concepto: "Horas Extras" } },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "auxilio-movilidad-masivo", nombre: "Auxilio de Movilidad Masivo",
+  resumen: "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPEC.",
+  pasos: [
+    { titulo: "Identificar valores de auxilio", texto: "Utilizar la columna AUXILIO DE MOVILIDAD obtenida durante el proceso de Horas Extras." },
+    { titulo: "Filtrar registros", texto: "Filtrar los registros con valor diferente de cero." },
+    { bloque: "determinacionPeriodoNomina" },
+    { bloque: "planoPagosDeducciones", params: { concepto: "158" } },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "permiso-no-remunerado", nombre: "Permiso No Remunerado (PNR)",
+  resumen: "Desde la clasificación de horas de permiso hasta el registro y validación en SIPEC.",
+  pasos: [
+    { titulo: "Ordenar registros", texto: "Ordenar la columna Permiso No Remunerado de menor a mayor." },
+    { titulo: "Separar registros", texto: "Separar los registros menores a 8.4 horas y los mayores o iguales a 8.4 horas." },
+    { bloque: "determinacionPeriodoNomina" },
+    { bloque: "planoPagosDeducciones", params: { concepto: "003" } },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" },
+    { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Para los registros iguales o superiores a 8.4 horas, realizar el registro manual en SIPEC." },
+    { bloque: "registroManualSIPEC", params: { concepto: "035" } }
+  ]
+},
+{
+  id: "fondo-empleados", nombre: "Fondo de Empleados",
+  resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
+  pasos: [
+    { titulo: "Recibir archivo", texto: "Recibir el archivo enviado por Transcender." },
+    { titulo: "Guardar archivo", texto: "Guardar el archivo utilizando la nomenclatura establecida." },
+    { titulo: "Ubicar archivo", texto: "Copiar el archivo a la carpeta de planos de SIPE correspondiente." },
     { bloque: "cargaPlanoSIPEC" },
     { bloque: "validacionPosteriorCarga" }
   ]
