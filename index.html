@@ -194,7 +194,7 @@ Paso a paso:
 2. Abrir el módulo correspondiente a la novedad.
 3. Ingresar la cédula del colaborador.
 4. Verificar que la información contractual cargue correctamente.
-5. Seleccionar el concepto correspondiente.
+5. Seleccionar el concepto: {concepto}.
 6. Registrar:
    - Fechas.
    - Valores.
@@ -415,6 +415,25 @@ Punto de control: verificar que el concepto, valor, cantidad de días y fechas r
     }
   ]
 },
+{
+  id: "registro-manual-horas-extras", nombre: "Registro manual de horas extras",
+  resumen: "Descarga e ingreso manual de horas extras en SIPEC.",
+  padre: "horas-extras-masivo",
+  pasos: [
+    { titulo: "Descargar las horas extras", texto: "Descargar el reporte de horas extras del colaborador y validar las horas a registrar." },
+    { bloque: "registroManualSIPEC", params: { concepto: "el que corresponda al tipo de hora extra" } },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "registro-manual-auxilio", nombre: "Registro manual de auxilio",
+  resumen: "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
+  padre: "auxilio-movilidad-masivo",
+  pasos: [
+    { bloque: "registroManualSIPEC", params: { concepto: "158" } },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
   /* Para agregar otro proceso: pon una coma después de la llave } de arriba
      y copia aquí un proceso nuevo con otro id. */
 ];
@@ -470,7 +489,7 @@ function verMenu() {
   function filtrar() {
     const q = buscador.value.toLowerCase();
     // Busca en nombre, resumen y también dentro del texto de los pasos
-    const hallados = PROCESOS.filter(p =>
+    const hallados = PROCESOS.filter(p => !p.padre &&
       (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
     lista.innerHTML = hallados.length
       ? hallados.map(p => `<button class="proceso" data-id="${p.id}">
@@ -487,24 +506,24 @@ function verMenu() {
  
 /* PANTALLA 2: paso a paso de un proceso */
 function verProceso(p) {
+  const hijos = PROCESOS.filter(x => x.padre === p.id);   // subprocesos de este proceso
+  const padre = PROCESOS.find(x => x.id === p.padre);     // si este es subproceso, su padre
   app.innerHTML = `
-    <button class="volver" id="volver">‹ Volver al menú</button>
+    <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver al menú"}</button>
     <h2>${limpiar(p.nombre)}</h2>
     <p class="sub">${limpiar(p.resumen)}</p>
+    ${hijos.length ? `<h3>Subprocesos</h3>
+      <div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${h.id}">
+        <strong>${limpiar(h.nombre)}</strong><span>${limpiar(h.resumen)}</span></button>`).join("")}</div>` : ""}
     <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
-  document.getElementById("volver").onclick = () => { location.hash = ""; };
+  document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : ""; };
+  const caja = document.getElementById("hijos");
+  if (caja) caja.addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]");
+    if (b) location.hash = b.dataset.id;
+  });
   window.scrollTo(0, 0);
 }
- 
-/* "Router": decide qué pantalla mostrar según la dirección (#...) */
-function navegar() {
-  const id = location.hash.slice(1);
-  const p = PROCESOS.find(x => x.id === id);
-  p ? verProceso(p) : verMenu();
-}
-window.addEventListener("hashchange", navegar);
-navegar();
- 
 /* NOTA SOBRE IMÁGENES: guarda las imágenes en una carpeta img/ dentro del
    repositorio y escribe, por ejemplo, imagen: "img/plano.png". */
 </script>
