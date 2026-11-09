@@ -524,6 +524,14 @@ function verProceso(p) {
   });
   window.scrollTo(0, 0);
 }
+/* "Router": decide qué pantalla mostrar según la dirección (#...) */
+function navegar() {
+  const id = location.hash.slice(1);
+  const p = PROCESOS.find(x => x.id === id);
+  p ? verProceso(p) : verMenu();
+}
+window.addEventListener("hashchange", navegar);
+navegar();
 /* NOTA SOBRE IMÁGENES: guarda las imágenes en una carpeta img/ dentro del
    repositorio y escribe, por ejemplo, imagen: "img/plano.png". */
 </script>
