@@ -132,7 +132,7 @@ Paso a paso:
 6. Revisar los registros generados.
 7. Guardar el archivo en formato CSV delimitado por comas.
 8. Asignar una nomenclatura corta y estandarizada.`,
-    imagen: ""
+    imagen: "guardar-csv.png"
   },
   cargaPlanoSIPEC: {
     titulo: "Carga de archivo plano en SIPEC",
@@ -182,7 +182,7 @@ Paso a paso:
    - Período.
 5. Comparar contra el archivo plano.
 6. Confirmar que la información coincida totalmente.`,
-    imagen: ""
+    imagen: "validacion-pagos-deducciones.png"
   },
   registroManualSIPEC: {
     titulo: "Registro manual de novedades en SIPEC",
@@ -313,7 +313,37 @@ const PROCESOS = [
     { bloque: "validacionPosteriorCarga" }
   ]
 },
-
+{
+  id: "fondo-empleados", nombre: "Fondo de Empleados",
+  resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
+  pasos: [
+    { titulo: "Recibir archivo", texto: "Recibir el archivo enviado por Transcender." },
+    { titulo: "Guardar archivo", texto: "Guardar el archivo utilizando la nomenclatura establecida." },
+    { titulo: "Ubicar archivo", texto: "Copiar el archivo a la carpeta de planos de SIPE correspondiente." },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "novedad-restaurante", nombre: "Novedad del Restaurante",
+  resumen: "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPEC.",
+  pasos: [
+    { titulo: "Recibir archivo de consumos", texto: "Recibir el archivo enviado por el responsable del restaurante. Guardarlo en la carpeta correspondiente al período procesado y abrirlo para iniciar la consolidación de la información." },
+    { titulo: "Identificar hojas de trabajo", texto: "El archivo contiene cinco hojas. Para este proceso se utilizarán las siguientes:\n- RESUMEN.\n- TESTEO.\n- PALMAS." },
+    { titulo: "Actualizar información de colaboradores", texto: "Antes de iniciar la consolidación, actualizar el archivo CONTROL QUINCENAL DE RESTAURANTE con la información de Estado (Activo o Retirado) y Salario, consultando la base de datos general. (PREGUNTAR)." },
+    { titulo: "Consolidar información de Antioquia", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CEDIGUARNE.\n- FABRICATO_RIONEGRO.\n- PLANTA_1.\n- PLANTARIONEGRO.\n- ROSENDAL.\n\nCopiar las columnas CÉDULA y NOMBRE y trasladarlas al archivo CONTROL QUINCENAL DE RESTAURANTE. Posteriormente, copiar la cantidad de consumos y registrarla en la columna CONSUMOS. Repetir el procedimiento con las hojas TESTEO y PALMAS." },
+    { titulo: "Validar consolidación de Antioquia", texto: "Verificar que las cédulas se encuentren en formato numérico y que las cantidades de consumos hayan sido trasladadas correctamente. Tener presente que pueden aparecer registros de personas que no pertenecen habitualmente a la nómina." },
+    { titulo: "Consolidar información de Cartagena", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CARTAGENA.\n- CARTAGENAP3.\n\nCopiar la información correspondiente y trasladarla a la hoja CARTAGENA del archivo CONTROL QUINCENAL DE RESTAURANTE. Registrar los consumos reportados y completar las fórmulas requeridas." },
+    { titulo: "Validar consolidación de Cartagena", texto: "Verificar que la totalidad de los registros de Cartagena haya sido trasladada correctamente al archivo de control." },
+    { bloque: "gestionTemporales" },
+    { titulo: "Consolidar temporales", texto: "Filtrar en el archivo quincenal todos los colaboradores pertenecientes a las siguientes empresas temporales:\n- AHORA CENCORP.\n- AHORA S.A.S (AUT).\n- AHORA S.A.S (CG).\n- AHORA S.A.S (MOB).\n- COMPLEMENTOS HUMANOS (MOB).\n\nCopiar todos los registros filtrados, sin excepción, y trasladarlos a la hoja TEMPORAL del archivo quincenal. Incluir tanto los temporales de Antioquia como los de Cartagena." },
+    { titulo: "Trasladar novedades de temporales", texto: "En la hoja TEMPORAL, filtrar la información por empresa y copiar los registros al archivo compartido de Novedades Temporales. Ubicar la hoja correspondiente a cada empresa y registrar la novedad." },
+    { titulo: "Abrir plano de restaurante", texto: "Abrir la carpeta de PLANOS y ubicar el archivo plano denominado FOOD, correspondiente al registro de esta novedad." },
+    { bloque: "planoPagosDeducciones", params: { concepto: "600 - Restaurante", archivo: "FOOD" } },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
   /* Para agregar otro proceso: pon una coma después de la llave } de arriba
      y copia aquí un proceso nuevo con otro id. */
 ];
