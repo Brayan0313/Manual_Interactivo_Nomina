@@ -470,8 +470,8 @@ function pintarPaso(paso) {
     titulo = rellenar(paso.titulo, paso.params);
     texto  = rellenar(paso.texto, paso.params);
     imagen = paso.imagen || "";
-  }
-  const media = imagen
+  } /*correcion aqui*/
+  const media = imagen 
     ? `<img class="imagen" src="${imagen}" alt="Captura del paso">`
     : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
