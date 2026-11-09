@@ -455,7 +455,6 @@ function rellenar(plantilla, params = {}) {
  
 /* Convierte un paso (propio o de bloque) en un <li> */
 function pintarPaso(paso) {
-  function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
   if (paso.bloque) {                       // paso que usa un bloque reutilizable
     const b = BLOQUES[paso.bloque];
@@ -476,7 +475,7 @@ function pintarPaso(paso) {
     : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
-}
+
  
 /* PANTALLA 1: menú con buscador */
 function verMenu() {
