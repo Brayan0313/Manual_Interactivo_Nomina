@@ -455,6 +455,7 @@ function rellenar(plantilla, params = {}) {
  
 /* Convierte un paso (propio o de bloque) en un <li> */
 function pintarPaso(paso) {
+  function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
   if (paso.bloque) {                       // paso que usa un bloque reutilizable
     const b = BLOQUES[paso.bloque];
@@ -463,7 +464,7 @@ function pintarPaso(paso) {
       <p>Revisa que este nombre exista en BLOQUES, escrito igual.</p></li>`;
     titulo = rellenar(b.titulo, paso.params);
     texto  = rellenar(b.texto, paso.params);
-    imagen = b.imagen;
+    imagen = paso.imagen || b.imagen;      // la del paso manda; si no hay, usa la del bloque
     etiqueta = '<span class="comun">Paso común a varios procesos</span>';
   } else {                                 // paso propio del proceso
     titulo = rellenar(paso.titulo, paso.params);
@@ -473,6 +474,8 @@ function pintarPaso(paso) {
   const media = imagen
     ? `<img class="imagen" src="${imagen}" alt="Captura del paso">`
     : "";
+  return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
+}
 }
  
 /* PANTALLA 1: menú con buscador */
