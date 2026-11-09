@@ -314,17 +314,6 @@ const PROCESOS = [
   ]
 },
 {
-  id: "fondo-empleados", nombre: "Fondo de Empleados",
-  resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
-  pasos: [
-    { titulo: "Recibir archivo", texto: "Recibir el archivo enviado por Transcender." },
-    { titulo: "Guardar archivo", texto: "Guardar el archivo utilizando la nomenclatura establecida." },
-    { titulo: "Ubicar archivo", texto: "Copiar el archivo a la carpeta de planos de SIPE correspondiente." },
-    { bloque: "cargaPlanoSIPEC" },
-    { bloque: "validacionPosteriorCarga" }
-  ]
-},
-{
   id: "novedad-restaurante", nombre: "Novedad del Restaurante",
   resumen: "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPEC.",
   pasos: [
@@ -342,6 +331,88 @@ const PROCESOS = [
     { bloque: "planoPagosDeducciones", params: { concepto: "600 - Restaurante", archivo: "FOOD" } },
     { bloque: "cargaPlanoSIPEC" },
     { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "bonos-productividad", nombre: "Bonos de Productividad",
+  resumen: "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPEC.",
+  pasos: [
+    { bloque: "plano", params: { novedad: "Bonos de Productividad", columna: "Estado del colaborador" } },
+    { bloque: "plano", params: { novedad: "Bonos de Productividad", columna: "Empresa del colaborador" } },
+    { titulo: "Validar información de colaboradores", texto: "Verificar que todos los colaboradores incluidos en el proceso cuenten con información de estado y empresa. Identificar y resaltar los colaboradores retirados." },
+    { bloque: "gestionTemporales" },
+    { titulo: "Filtrar colaboradores permanentes", texto: "Una vez retirados los registros temporales, filtrar los colaboradores permanentes por empresa. Posteriormente, filtrar la columna BONO PAGAR y excluir los registros cuyo valor sea igual a 0." },
+    { titulo: "Validar bonificaciones pendientes", texto: "Verificar que únicamente permanezcan colaboradores con valores de bonificación pendientes de pago." },
+    { bloque: "determinacionPeriodoNomina" },
+    { bloque: "planoPagosDeducciones", params: { concepto: "100 - Bono de Productividad", archivo: "PAGOS Y DEDUCCIONES PLANO", valor: "BONO PAGAR" } },
+    { titulo: "Completar información del plano", texto: "Completar los campos requeridos de la plantilla:\n- Columna A: credencial de la empresa correspondiente.\n- Columna B: cédula del colaborador.\n- Columna C: concepto 100, correspondiente a Bono de Productividad.\n- Columna D: valor registrado en la columna BONO PAGAR.\n- Columna I: período correspondiente a la nómina procesada.\n\nCompletar los demás campos requeridos por la plantilla. En las hojas PLANO y FINAL, arrastrar la primera fila formulada hasta completar la totalidad de registros incluidos en el proceso." },
+    { titulo: "Validar información del plano", texto: "Verificar que las cédulas y los valores trasladados coincidan con la información contenida en el archivo de bonificaciones mensuales." },
+    { titulo: "Guardar archivo", texto: "Guardar el archivo en formato CSV (delimitado por comas), utilizando una nomenclatura que permita identificar la empresa y la novedad registrada.\n\nEjemplos:\n- BONIAUT.\n- BONIMOB.\n- BONICEN.\n- BONIBLU." },
+    { bloque: "cargaPlanoSIPEC" },
+    { bloque: "validacionPosteriorCarga" }
+  ]
+},
+{
+  id: "gestion-paz-y-salvo", nombre: "Gestión de Paz y Salvo",
+  resumen: "Desde la notificación del retiro hasta la validación de obligaciones y novedades pendientes para la liquidación de prestaciones sociales.",
+  pasos: [
+    { titulo: "Recibir notificación de retiro", texto: "Recibir el correo electrónico mediante el cual se informa el retiro del colaborador, independientemente del motivo de desvinculación (renuncia, pensión, terminación de contrato, entre otros).\n\nVerificar que el correo contenga la siguiente información:\n- Nombre del colaborador.\n- Número de identificación.\n- Fecha de retiro.\n- Observaciones relevantes." },
+    { titulo: "Registrar información del colaborador", texto: "Registrar la información en el archivo de Control de Paz y Salvo, diligenciando los siguientes campos:\n- Cédula.\n- Nombre completo.\n- Cargo.\n- Fecha de retiro.\n- Motivo de retiro.\n\nVerificar que la información registrada coincida con la reportada en el correo de retiro." },
+    { titulo: "Enviar solicitud de Paz y Salvo", texto: "Enviar un correo electrónico con el asunto \"Solicitud de Paz y Salvo\" a las áreas responsables de suministrar información sobre posibles novedades pendientes del colaborador.\n\nResponsables del área contable según la empresa:\n- Cencorp: Carolina Baquero Giraldo.\n- Carguesa: Deisy Yarce.\n- Mobility: Alexandra.\n- Blue: María Alejandra Deossa.\n\nIncluir adicionalmente a los siguientes destinatarios:\n- Fondo de empleados.\n- Área de Tecnología.\n- Andrés Garzón (restaurante).\n- Responsable de Contratación (Yessica o Yamile), para la gestión de la carta laboral." },
+    { titulo: "Registrar respuestas de las áreas", texto: "Registrar en el archivo de Control de Paz y Salvo la información suministrada por cada una de las áreas consultadas. Cuando algún concepto no aplique al colaborador o no exista relación con el área correspondiente, registrar N/A (no aplica)." },
+    { titulo: "Identificar novedades pendientes", texto: "Registrar las novedades reportadas por las diferentes áreas, entre las que pueden encontrarse:\n- Bono de celular.\n- Equipos pendientes por entregar.\n- Saldos pendientes.\n- Comisiones pendientes de pago.\n- Bonificaciones pendientes.\n- Otras novedades que puedan impactar la liquidación.\n\nVerificar que todas las áreas requeridas hayan respondido antes de continuar con el proceso." },
+    { titulo: "Organizar soportes del retiro", texto: "Crear una carpeta individual para el colaborador dentro de la subcarpeta de liquidaciones correspondiente a la empresa.\n\nAlmacenar en esta carpeta:\n- Solicitud de Paz y Salvo.\n- Respuestas de las áreas involucradas.\n- Soportes recibidos.\n- Demás documentos relacionados con el proceso de retiro." },
+    { titulo: "Validar Paz y Salvo", texto: "Una vez recibida y validada toda la información del Paz y Salvo, confirmar que no existan novedades pendientes de revisión antes de generar la liquidación de las prestaciones sociales del colaborador." },
+    { titulo: "Validar consumos de restaurante", texto: "Cuando el colaborador tenga consumos de almuerzos pendientes de descuento al momento de su retiro, verificar el valor correspondiente según su rango salarial y la sede a la que pertenece.\n\nValores de referencia:\n\n| Rango salarial | Subsidio | Antioquia | Cartagena |\n|---|---:|---:|---:|\n| 1-2 SM | 80% | $3.321 | $3.614 |\n| 2-3 SM | 50% | $8.328 | $9.036 |\n| 3-4 SM | 25% | $12.492 | $13.554 |\n| 4+ SM | No aplica | $16.656 | $18.702 |\n\nVerificar con el responsable del restaurante si el colaborador presenta consumos pendientes de descuento antes de generar la liquidación." }
+  ]
+},
+{
+  id: "pago-dias-vacaciones",
+  nombre: "Pago días de vacaciones",
+  resumen: "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPEC.",
+  pasos: [
+    {
+      titulo: "Validar condiciones para la compensación de vacaciones",
+      texto: `Verificar que el colaborador cumpla con las siguientes condiciones:
+- Contar con más de 30 días de vacaciones causadas.
+- Contar con autorización previa de Talento Humano.
+- Aplicar únicamente en situaciones de calamidad.`
+    },
+    {
+      titulo: "Recepción de autorización",
+      texto: "Recibir el correo electrónico enviado por el área de Talento Humano mediante el cual se autoriza la compensación de vacaciones del colaborador."
+    },
+    {
+      titulo: "Consultar información contractual y calcular el valor",
+      texto: `Acceder a SIPEC con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.
+
+Ingresar la cédula del colaborador y seleccionar la opción "Traer vinculación". El sistema cargará automáticamente la información contractual.
+
+Con base en la información obtenida, calcular el valor de las vacaciones compensadas mediante la siguiente fórmula:
+
+(Salario Regular Original / 30) * Días que serán compensados
+
+Punto de control: verificar que la información contractual corresponda al colaborador y que el cálculo se haya realizado correctamente antes de continuar.`
+    },
+    {
+      titulo: "Registrar la novedad en SIPEC",
+      texto: `Ingresar a la ruta TRANSACCIONES > NOVEDADES > PAGOS Y DEDUCCIONES.
+
+En la ventana emergente:
+- Ingresar la cédula del colaborador.
+- En el campo Concepto, presionar F9 y seleccionar la novedad "VACACIONES COMPENSADAS".
+- Registrar el valor calculado en el paso anterior.
+- Registrar la cantidad de días de vacaciones a compensar.
+- Completar los demás campos requeridos y desplazarse hasta el final del registro utilizando la tecla TAB.
+
+Nota: En los campos Fecha Inicio de novedad y Fecha final de novedad, introducir fechas corridas que sumen los días que van a ser causados.
+
+Punto de control: verificar que el concepto, valor, cantidad de días y fechas registradas coincidan con la solicitud autorizada.`
+    },
+    {
+      titulo: "Validar y guardar la novedad",
+      texto: "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPEC y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
+    }
   ]
 },
   /* Para agregar otro proceso: pon una coma después de la llave } de arriba
