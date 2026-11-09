@@ -8,17 +8,19 @@
 <style>
   /* ===== 1. COLORES (variables): cambia aquí y cambia todo el manual ===== */
   :root {
-    --fondo: #f3f6f8; --tarjeta: #ffffff; --texto: #12263a; --suave: #5b6b7a;
-    --linea: #d5dee6; --acento: #0f766e; --acento-texto: #ffffff;
-    --param-fondo: #fef3c7; --param-texto: #7c4a03;
+    --fondo: #eceff3; --tarjeta: #ffffff; --texto: #1a2433; --suave: #5d6a7c;
+    --linea: #d2d8e0; --acento: #14275a; --acento-texto: #ffffff;
+    --titulo: #14275a; --rojo: #c8102e;
+    --param-fondo: #fde7ea; --param-texto: #9b0c22;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --fondo: #0e1a26; --tarjeta: #162536; --texto: #e6eef5; --suave: #9db0c0;
-      --linea: #2a3d50; --acento: #2dd4bf; --acento-texto: #06231f;
-      --param-fondo: #4a3510; --param-texto: #fcd34d;
+      --fondo: #0b1424; --tarjeta: #14203a; --texto: #e7ecf4; --suave: #9ba8bc;
+      --linea: #263451; --acento: #3d65c9; --acento-texto: #ffffff;
+      --titulo: #dbe5ff; --rojo: #ff5c72;
+      --param-fondo: #4a1822; --param-texto: #ffb3be;
     }
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
@@ -58,6 +60,13 @@
   .imagen { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
   .marcador { margin-top: 10px; border: 1.5px dashed var(--linea); border-radius: 8px; padding: 22px 12px;
     text-align: center; color: var(--suave); font-size: .9rem; }
+      /* ===== 4. TOQUES DE DISEÑO: azul oscuro, rojo y gris ===== */
+  body { border-top: 6px solid var(--rojo); }          /* franja roja superior */
+  h1, h2 { color: var(--titulo); }                     /* títulos en azul oscuro */
+  .proceso strong { color: var(--titulo); }
+  .proceso:hover { border-color: var(--rojo); }        /* resalta en rojo al pasar el mouse */
+  .volver { color: var(--rojo); }                      /* botón volver en rojo */
+  ol.pasos > li { border-left: 4px solid var(--acento); }  /* borde azul en cada paso */
 </style>
 </head>
 <body>
