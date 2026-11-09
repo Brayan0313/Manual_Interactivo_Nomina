@@ -472,8 +472,7 @@ function pintarPaso(paso) {
   }
   const media = imagen
     ? `<img class="imagen" src="${imagen}" alt="Captura del paso">`
-    : `<div class="marcador">Aquí va la captura de pantalla</div>`;
-  return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
+    : "";
 }
  
 /* PANTALLA 1: menú con buscador */
