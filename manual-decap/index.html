@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manual de nómina</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== COLORES: azul oscuro, rojo y gris ===== */
+  :root {
+    --fondo: #eceff3; --tarjeta: #ffffff; --texto: #1a2433; --suave: #5d6a7c;
+    --linea: #d2d8e0; --acento: #14275a; --acento-texto: #ffffff;
+    --titulo: #14275a; --rojo: #c8102e;
+    --param-fondo: #fde7ea; --param-texto: #9b0c22;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fondo: #0b1424; --tarjeta: #14203a; --texto: #e7ecf4; --suave: #9ba8bc;
+      --linea: #263451; --acento: #3d65c9; --acento-texto: #ffffff;
+      --titulo: #dbe5ff; --rojo: #ff5c72;
+      --param-fondo: #4a1822; --param-texto: #ffb3be;
+    }
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--fondo); color: var(--texto); border-top: 6px solid var(--rojo);
+    font: 16px/1.6 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 18px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 8px 0 6px; color: var(--titulo); }
+  h2 { font-size: 1.35rem; margin: 0 0 4px; color: var(--titulo); }
+  p.sub { color: var(--suave); margin: 0 0 20px; }
+  :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+
+  /* ===== MENÚ ===== */
+  #buscador { width: 100%; box-sizing: border-box; padding: 12px 14px; font: inherit; color: inherit;
+    background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; margin-bottom: 14px; }
+  .lista { display: grid; gap: 10px; }
+  .proceso { text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100%;
+    background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; padding: 14px 16px; }
+  .proceso:hover { border-color: var(--rojo); }
+  .proceso strong { display: block; color: var(--titulo); }
+  .proceso span { color: var(--suave); font-size: .92rem; }
+  .vacio { color: var(--suave); padding: 12px 2px; }
+
+  /* ===== PASO A PASO ===== */
+  .volver { background: none; border: 0; color: var(--rojo); font: inherit; font-weight: 600;
+    cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
+  ol.pasos { list-style: none; counter-reset: p; padding: 0; margin: 20px 0 0; }
+  ol.pasos > li { counter-increment: p; position: relative; background: var(--tarjeta);
+    border: 1.5px solid var(--linea); border-left: 4px solid var(--acento); border-radius: 10px;
+    padding: 14px 16px 14px 56px; margin-bottom: 12px; }
+  ol.pasos > li::before { content: counter(p); position: absolute; left: 14px; top: 14px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--acento); color: var(--acento-texto); font-weight: 700;
+    display: grid; place-items: center; font-size: .9rem; }
+  .pasos h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .pasos p { margin: 0; white-space: pre-line; }
+  .comun { display: inline-block; font-size: .8rem; color: var(--suave); margin-top: 8px; }
+  .param { background: var(--param-fondo); color: var(--param-texto); border-radius: 5px; padding: 0 6px; font-weight: 600; }
+  .imagen { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
+</style>
+</head>
+<body>
+<main id="app"><p class="sub">Cargando manual…</p></main>
+
+<script>
+/* =====================================================================
+   LOS DATOS YA NO ESTÁN AQUÍ: viven en datos/manual.json
+   y se editan desde la pantalla /admin (Decap CMS).
+   Este archivo solo contiene el diseño y la lógica.
+   ===================================================================== */
+let BLOQUES = {};
+let PROCESOS = [];
+const app = document.getElementById("app");
+
+/* Escapa texto para que nunca se interprete como HTML */
+const limpiar = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Reemplaza cada {parametro} por su valor, resaltado */
+function rellenar(plantilla, params = {}) {
+  return limpiar(plantilla).replace(/\{(\w+)\}/g, (_, clave) =>
+    clave in params ? `<span class="param">${limpiar(params[clave])}</span>` : `{${clave}}`);
+}
+
+/* Convierte un paso (propio o de bloque) en un <li> */
+function pintarPaso(paso) {
+  let titulo, texto, imagen = "", etiqueta = "";
+  if (paso.bloque) {
+    const b = BLOQUES[paso.bloque];
+    if (!b) return `<li><h3>Falta el bloque: ${limpiar(paso.bloque)}</h3>
+      <p>Revisa que este bloque exista en el CMS, escrito igual.</p></li>`;
+    titulo = rellenar(b.titulo, paso.params);
+    texto  = rellenar(b.texto, paso.params);
+    imagen = paso.imagen || b.imagen || "";
+    etiqueta = '<span class="comun">Paso común a varios procesos</span>';
+  } else {
+    titulo = rellenar(paso.titulo, paso.params);
+    texto  = rellenar(paso.texto, paso.params);
+    imagen = paso.imagen || "";
+  }
+  const media = imagen ? `<img class="imagen" src="${limpiar(imagen)}" alt="Captura del paso">` : "";
+  return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
+}
+
+/* PANTALLA 1: menú con buscador */
+function verMenu() {
+  app.innerHTML = `
+    <h1>Manual de nómina</h1>
+    <p class="sub">¿De qué proceso quieres saber?</p>
+    <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra" aria-label="Buscar">
+    <div class="lista" id="lista"></div>`;
+  const lista = document.getElementById("lista");
+  const buscador = document.getElementById("buscador");
+  function filtrar() {
+    const q = buscador.value.toLowerCase();
+    const hallados = PROCESOS.filter(p => !p.padre &&
+      (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
+    lista.innerHTML = hallados.length
+      ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}">
+          <strong>${limpiar(p.nombre)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
+      : '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>';
+  }
+  buscador.addEventListener("input", filtrar);
+  lista.addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]");
+    if (b) location.hash = b.dataset.id;
+  });
+  filtrar();
+}
+
+/* PANTALLA 2: paso a paso de un proceso (con subprocesos si tiene) */
+function verProceso(p) {
+  const hijos = PROCESOS.filter(x => x.padre === p.id);
+  const padre = PROCESOS.find(x => x.id === p.padre);
+  app.innerHTML = `
+    <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver al menú"}</button>
+    <h2>${limpiar(p.nombre)}</h2>
+    <p class="sub">${limpiar(p.resumen)}</p>
+    ${hijos.length ? `<h3>Subprocesos</h3>
+      <div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${limpiar(h.id)}">
+        <strong>${limpiar(h.nombre)}</strong><span>${limpiar(h.resumen)}</span></button>`).join("")}</div>` : ""}
+    <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
+  document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : ""; };
+  const caja = document.getElementById("hijos");
+  if (caja) caja.addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]");
+    if (b) location.hash = b.dataset.id;
+  });
+  window.scrollTo(0, 0);
+}
+
+/* "Router": decide qué pantalla mostrar según la dirección (#...) */
+function navegar() {
+  const id = location.hash.slice(1);
+  const p = PROCESOS.find(x => x.id === id);
+  p ? verProceso(p) : verMenu();
+}
+
+/* CARGA DE DATOS: lee datos/manual.json y arranca la página */
+fetch("datos/manual.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    // Los bloques llegan como lista; los pasamos a un diccionario por id
+    BLOQUES = Object.fromEntries((d.bloques || []).map(b => [b.id, b]));
+    // Los parámetros llegan como lista [{nombre, valor}]; los pasamos a objeto
+    PROCESOS = (d.procesos || []).map(p => ({
+      ...p,
+      pasos: (p.pasos || []).map(s => ({
+        ...s,
+        params: Object.fromEntries((s.params || []).map(x => [x.nombre, x.valor]))
+      }))
+    }));
+    window.addEventListener("hashchange", navegar);
+    navegar();
+  })
+  .catch(() => {
+    app.innerHTML = '<h1>No se pudo cargar el manual</h1><p class="sub">Falta el archivo datos/manual.json o no se puede leer. Avisa al responsable del manual.</p>';
+  });
+</script>
+</body>
+</html>
