@@ -1,0 +1,80 @@
+backend:
+  name: github
+  repo: Brayan0313/Manual_Interactivo_Nomina
+  branch: main
+  # Cuando tengas el servicio de inicio de sesión, quita el # y pega su dirección:
+  # base_url: https://TU-SERVICIO-DE-LOGIN.workers.dev
+
+locale: es
+
+media_folder: "img"
+public_folder: "img"
+
+collections:
+  - name: manual
+    label: "Manual de nómina"
+    files:
+      - name: datos
+        label: "Contenido del manual"
+        file: "datos/manual.json"
+        fields:
+
+          - label: "Bloques reutilizables"
+            name: bloques
+            widget: list
+            label_singular: "bloque"
+            summary: "{{fields.titulo}}"
+            hint: "Pasos que se repiten en varios procesos. Use {nombre} para marcar un dato que cambia en cada proceso."
+            fields:
+              - { label: "Identificador", name: id, widget: string, hint: "Sin espacios ni tildes. No lo cambie después de crearlo." }
+              - { label: "Título", name: titulo, widget: string }
+              - { label: "Texto", name: texto, widget: text }
+              - { label: "Imagen", name: imagen, widget: image, required: false }
+
+          - label: "Procesos"
+            name: procesos
+            widget: list
+            label_singular: "proceso"
+            summary: "{{fields.nombre}}"
+            fields:
+              - { label: "Identificador", name: id, widget: string, hint: "En minúsculas, sin espacios ni tildes, con guiones. No lo cambie después de crearlo." }
+              - { label: "Nombre", name: nombre, widget: string }
+              - { label: "Resumen", name: resumen, widget: text }
+              - label: "Es subproceso de"
+                name: padre
+                widget: relation
+                collection: manual
+                file: datos
+                search_fields: ["procesos.*.nombre"]
+                value_field: "procesos.*.id"
+                display_fields: ["procesos.*.nombre"]
+                required: false
+                hint: "Déjelo vacío si es un proceso principal."
+              - label: "Pasos"
+                name: pasos
+                widget: list
+                label_singular: "paso"
+                summary: "{{fields.titulo}}{{fields.bloque}}"
+                hint: "Escriba un título y texto propios, O elija un bloque reutilizable (no ambos)."
+                fields:
+                  - { label: "Título", name: titulo, widget: string, required: false }
+                  - { label: "Texto", name: texto, widget: text, required: false }
+                  - label: "Bloque reutilizable"
+                    name: bloque
+                    widget: relation
+                    collection: manual
+                    file: datos
+                    search_fields: ["bloques.*.titulo"]
+                    value_field: "bloques.*.id"
+                    display_fields: ["bloques.*.titulo"]
+                    required: false
+                  - label: "Datos que cambian en este bloque"
+                    name: params
+                    widget: list
+                    label_singular: "dato"
+                    required: false
+                    hint: "Ejemplo: nombre = concepto, valor = 158. Solo si el bloque tiene {llaves}."
+                    fields:
+                      - { label: "Nombre", name: nombre, widget: string }
+                      - { label: "Valor", name: valor, widget: string }
+                  - { label: "Imagen de este paso", name: imagen, widget: image, required: false }
