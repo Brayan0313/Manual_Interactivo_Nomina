@@ -300,20 +300,24 @@ const PROCESOS = [
       { bloque: "validacionPosteriorCarga" }
     ]
   },
-  {
+    {
     id: "permiso-no-remunerado", nombre: "Permiso No Remunerado (PNR)",
     resumen: "Desde la clasificación de horas de permiso hasta el registro y validación en SIPEC.",
     pasos: [
-      { titulo: "Ordenar registros", texto: "Ordenar la columna Permiso No Remunerado de menor a mayor." },
-      { titulo: "Separar registros", texto: "Separar los registros menores a 8.4 horas y los mayores o iguales a 8.4 horas." },
+      { titulo: "Origen de la información", texto: "Este proceso registra en SIPEC los descuentos por permisos no remunerados reportados para los colaboradores, para que se apliquen correctamente en nómina.\n\nLa información proviene del proceso Horas Extras Masivo, de las columnas PNR y REDONDEO PNR generadas durante el cálculo de novedades." },
+      { titulo: "Ordenar registros", texto: "Ordenar la columna PERMISO NO REMUNERADO de menor a mayor, para identificar los registros que se cargarán por plano y los que requieren registro manual.\n\nNota: si el colaborador presenta 8.4 horas o más, el ingreso debe hacerse de forma manual.", imagen: "permiso-no-remunerado.png" },
+      { titulo: "Separar registros", texto: "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPEC (último paso de este proceso)." },
       { bloque: "determinacionPeriodoNomina" },
-      { bloque: "planoPagosDeducciones", params: { concepto: "003" } },
+      { titulo: "Construir el plano para permisos menores a 8.4 horas", texto: "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR." },
+      { titulo: "Generar el archivo CSV", texto: "1. Copiar todos los registros del plano, sin los encabezados.\n2. Pegarlos en un archivo nuevo de Excel.\n3. Guardar el archivo en formato CSV delimitado por comas.\n4. Usar un nombre que identifique la novedad y la empresa procesada.\n\nEjemplos:\n- PNRAUT.\n- PNRMOB.\n- PNRCEN." },
       { bloque: "cargaPlanoSIPEC" },
+      { titulo: "Diferencia al cargar este plano", texto: "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones." },
       { bloque: "validacionPosteriorCarga" },
-      { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Para los registros iguales o superiores a 8.4 horas, realizar el registro manual en SIPEC." },
+      { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Los permisos no remunerados de 8.4 horas o más no se cargan por archivo plano. Se registran manualmente en SIPEC, con la misma metodología del registro manual de horas extras del proceso Horas Extras Masivo.\n\nLa única diferencia es el concepto: para permisos no remunerados de 8.4 horas o más se usa el código 035." },
       { bloque: "registroManualSIPEC", params: { concepto: "035" } }
     ]
-  },
+},
+
   {
     id: "fondo-empleados", nombre: "Fondo de Empleados",
     resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
@@ -332,7 +336,7 @@ const PROCESOS = [
       { titulo: "Recibir archivo de consumos", texto: "Recibir el archivo enviado por el responsable del restaurante. Guardarlo en la carpeta correspondiente al período procesado y abrirlo para iniciar la consolidación de la información." },
       { titulo: "Identificar hojas de trabajo", texto: "El archivo contiene cinco hojas. Para este proceso se utilizarán las siguientes:\n- RESUMEN.\n- TESTEO.\n- PALMAS." },
       { titulo: "Actualizar información de colaboradores", texto: "Antes de iniciar la consolidación, actualizar el archivo CONTROL QUINCENAL DE RESTAURANTE con la información de Estado (Activo o Retirado) y Salario, consultando la base de datos general. (PREGUNTAR)." },
-      { titulo: "Consolidar información de Antioquia", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CEDIGUARNE.\n- FABRICATO_RIONEGRO.\n- PLANTA_1.\n- PLANTARIONEGRO.\n- ROSENDAL.\n\nCopiar las columnas CÉDULA y NOMBRE y trasladarlas al archivo CONTROL QUINCENAL DE RESTAURANTE. Posteriormente, copiar la cantidad de consumos y registrarla en la columna CONSUMOS. Repetir el procedimiento con las hojas TESTEO y PALMAS." },
+      { titulo: "Consolidar información de Antioquia", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CEDIGUARNE.\n- FABRICATO_RIONEGRO.\n- PLANTA_1.\n- PLANTARIONEGRO.\n- ROSENDAL.\n\nCopiar las columnas CÉDULA y NOMBRE y trasladarlas al archivo CONTROL QUINCENAL DE RESTAURANTE. Posteriormente, copiar la cantidad de consumos y registrarla en la columna CONSUMOS. Repetir el procedimiento con las hojas TESTEO y PALMAS.",imagen:"restaurante/informacion-antioquia.png"},
       { titulo: "Validar consolidación de Antioquia", texto: "Verificar que las cédulas se encuentren en formato numérico y que las cantidades de consumos hayan sido trasladadas correctamente. Tener presente que pueden aparecer registros de personas que no pertenecen habitualmente a la nómina." },
       { titulo: "Consolidar información de Cartagena", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CARTAGENA.\n- CARTAGENAP3.\n\nCopiar la información correspondiente y trasladarla a la hoja CARTAGENA del archivo CONTROL QUINCENAL DE RESTAURANTE. Registrar los consumos reportados y completar las fórmulas requeridas." },
       { titulo: "Validar consolidación de Cartagena", texto: "Verificar que la totalidad de los registros de Cartagena haya sido trasladada correctamente al archivo de control." },
