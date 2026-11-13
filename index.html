@@ -125,7 +125,7 @@ Utilizado en:
   },
   planoPagosDeducciones: {
     titulo: "Construcción de archivo plano de Pagos y Deducciones",
-    texto: `Preparar la información para su importación masiva en SIPEC utilizando el formato Pagos y Deducciones.
+    texto: `Preparar la información para su importación masiva en SIPE utilizando el formato Pagos y Deducciones.
 
 Paso a paso:
 
@@ -144,13 +144,13 @@ Paso a paso:
 8. Asignar una nomenclatura corta y estandarizada.`,
     imagen: "guardar-csv.png"
   },
-  cargaPlanoSIPEC: {
-    titulo: "Carga de archivo plano en SIPEC",
-    texto: `Importar novedades masivas al sistema SIPEC mediante archivo plano.
+  cargaPlanoSIPE: {
+    titulo: "Carga de archivo plano en SIPE",
+    texto: `Importar novedades masivas al sistema SIPE mediante archivo plano.
 
 Paso a paso:
 
-1. Ingresar a SIPEC con las credenciales correspondientes.
+1. Ingresar a SIPE con las credenciales correspondientes.
 2. Abrir la opción Exports-SIPE.
 3. Acceder a la carpeta de planos de la empresa.
 4. Copiar el archivo plano en la carpeta correspondiente.
@@ -177,7 +177,7 @@ Paso a paso:
   },
   validacionPosteriorCarga: {
     titulo: "Validación posterior a la carga",
-    texto: `Confirmar que la novedad quedó registrada correctamente en SIPEC.
+    texto: `Confirmar que la novedad quedó registrada correctamente en SIPE.
 
 Paso a paso:
 
@@ -194,13 +194,13 @@ Paso a paso:
 6. Confirmar que la información coincida totalmente.`,
     imagen: "validacion-pagos-deducciones.png"
   },
-  registroManualSIPEC: {
-    titulo: "Registro manual de novedades en SIPEC",
-    texto: `Registrar una novedad individual directamente en SIPEC cuando no se utilice cargue masivo.
+  registroManualSIPE: {
+    titulo: "Registro manual de novedades en SIPE",
+    texto: `Registrar una novedad individual directamente en SIPE cuando no se utilice cargue masivo.
 
 Paso a paso:
 
-1. Ingresar a SIPEC.
+1. Ingresar a SIPE.
 2. Abrir el módulo correspondiente a la novedad.
 3. Ingresar la cédula del colaborador.
 4. Verificar que la información contractual cargue correctamente.
@@ -241,7 +241,7 @@ Paso a paso:
 2. Determinar la quincena correspondiente.
 3. Verificar el número de período dentro de la secuencia anual (01 a 24).
 4. Registrar el período en el archivo plano o novedad.
-5. Validar que coincida con el período activo en SIPEC.`,
+5. Validar que coincida con el período activo en SIPE.`,
     imagen: ""
   }
 };
@@ -252,7 +252,7 @@ Paso a paso:
 const PROCESOS = [
   {
     id: "productividad-cedi", nombre: "Productividad CEDI",
-    resumen: "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPEC.",
+    resumen: "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPE.",
     pasos: [
       { titulo: "Preparar archivo de trabajo", texto: "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico." },
       { bloque: "buscarv", params: { columna: "Estado del colaborador" } },
@@ -263,13 +263,13 @@ const PROCESOS = [
       { titulo: "Redondear valores", texto: "Redondear los valores de pago a cero decimales." },
       { bloque: "determinacionPeriodoNomina" },
       { bloque: "planoPagosDeducciones", params: { concepto: "112 - Productividad" } },
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
   {
     id: "horas-extras-masivo", nombre: "Horas Extras Masivo",
-    resumen: "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPEC.",
+    resumen: "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPE.",
     pasos: [
       { titulo: "Consideraciones generales", texto: "Las novedades de horas extras se registran por quincena, según estos periodos:\n- Del día 6 al día 20 de cada mes: segunda quincena.\n- Del día 21 al día 5 del mes siguiente: primera quincena.\n\nConceptos utilizados:\n- Recargo Nocturno (RN): 010.\n- Hora Extra Diurna (HED): 045.\n- Auxilio de Movilidad: 158." },
       { titulo: "Descargar la información base", texto: "Verificar que esté disponible el archivo de Excel que contiene las claves de acceso a los documentos de horas laboradas de las sedes de Antioquia y Cartagena.\n\n1. Acceder a la ruta:\n   ESTE EQUIPO > MOBILITY (M) > HORAS LABORADAS > AÑO ACTUAL > MES ACTUAL.\n2. Abrir cada archivo con la clave correspondiente.\n3. En la hoja Horas Nómina, copiar la siguiente información:\n   - Cédula.\n   - Nombre.\n   - Nómina.\n   - Oficio.\n   - Nombre CECO.\n   - Las columnas de novedades que se usarán en el cálculo (TOTAL RN, TOTAL HED, etc.).\n4. Pegar la información en un archivo de trabajo nuevo de Excel, reuniendo los archivos de Antioquia y Cartagena." },
@@ -284,54 +284,54 @@ const PROCESOS = [
       { titulo: "Aplicar redondeo", texto: "Crear una nueva columna llamada REDONDEO PNR y aplicar la función:\n\nREDONDEAR(PNR, 0)\n\nArrastrar la fórmula hasta el último registro. Las columnas deben quedar así:" },
       { titulo: "Construir la hoja PTERCERO del plano", texto: "En la hoja CONSOLIDADO 2, filtrar primero por la empresa que se va a procesar.\n\nCon la empresa filtrada, procesar cada concepto de forma individual (RN, HED, HEN, FD, FN, HEDF, HEDN, PNR, AUXILIO DE MOVILIDAD y los demás que apliquen). Para cada concepto:\n1. Aplicar el filtro sobre la columna correspondiente.\n2. Excluir los registros cuyo valor sea 0.\n3. Conservar únicamente los colaboradores con valores para ese concepto.\n4. Registrar la información resultante en la hoja PTERCERO del archivo PLANO HE.\n\nEstructura de la hoja PTERCERO:\n- Columna A: código de la empresa.\n- Columna B: año actual.\n- Columna C: periodo.\n- Columna D: cédula.\n- Columna E: concepto de novedad.\n- Columna F: fecha del periodo.\n- Columna J: cantidad de horas.\n\nNota: ocultar las columnas de conceptos que no se utilizarán (las que no tienen color en el encabezado) y conservar solo las transformadas para el cargue.\n\nPunto de control: verificar que cada concepto se filtró individualmente y que en PTERCERO no hay registros con valor 0.",imagen:"he/plano_he.png"},
       { titulo: "Generar el archivo plano", texto: "1. En la hoja PTERCERO del archivo PLANO HE, identificar la cantidad total de filas que contienen información.\n2. Tomar el número de la última fila con datos y restarle 1, porque la primera fila son los encabezados. El resultado es la cantidad de registros que deben existir en las hojas PLANO y FINAL.\n3. Ir a la hoja PLANO, seleccionar la primera fila con fórmula y arrastrarla hasta completar esa cantidad de registros.\n4. Repetir el mismo procedimiento en la hoja FINAL.\n5. Guardar el archivo en formato Texto (MS-DOS) (*.txt) con el nombre HE_NOMBREEMPRESA.\n\nPunto de control: confirmar que PTERCERO, PLANO y FINAL tienen la misma cantidad de registros." },
-      { titulo: "Cargar el plano en SIPEC", texto: "1. Ingresar a SIPEC con las credenciales de la empresa correspondiente y el usuario asignado al área de Nómina.\n2. Seleccionar la opción Exports-SIPE, que abre el explorador de archivos de la empresa.\n3. Ir a la carpeta destinada a los planos de horas extras.\n4. Copiar el archivo plano generado y pegarlo en esa carpeta.\n5. Ingresar a UTILIDADES > IMPORTAR PLANO. En la ventana emergente configurar:\n   - Información a importar: Reporte de horas.\n   - Tipo de archivo: Posiciones.\n   - Nombre de archivo: el nombre exacto con el que se guardó el plano.\n6. Seleccionar CARGAR PLANO.\n7. Cuando el sistema confirme la carga, seleccionar VALIDAR.\n8. Revisar los registros procesados, los válidos y los que presenten error.\n9. Si no hay errores, seleccionar ACTUALIZAR para registrar las novedades de forma definitiva.\n\nNota: el nombre del archivo debe coincidir exactamente con el registrado al guardar el plano; cualquier diferencia impide que el sistema lo encuentre.\n\nPunto de control: la cantidad de registros procesados debe coincidir con la cantidad de novedades incluidas en el plano.\n\nSi la validación presenta errores:\n- Seleccionar REPORTE para identificar el registro afectado y la causa.\n- Corregir la información en el plano.\n- Eliminar la carga con la opción BORRAR.\n- Repetir la importación hasta obtener una validación exitosa.",imagen:"he/horas_extras_plano_sipe.png" },
-      { titulo: "Validación final", texto: "1. Ingresar a Transacciones > Novedades > Reporte de Horas.\n2. Seleccionar Criterio e ingresar la cédula de un colaborador incluido en el plano.\n\nPunto de control: verificar que las novedades registradas en SIPEC coincidan con la información cargada en el archivo plano.",imagen:"he/validacion-horas.png"}
+      { titulo: "Cargar el plano en SIPE", texto: "1. Ingresar a SIPE con las credenciales de la empresa correspondiente y el usuario asignado al área de Nómina.\n2. Seleccionar la opción Exports-SIPE, que abre el explorador de archivos de la empresa.\n3. Ir a la carpeta destinada a los planos de horas extras.\n4. Copiar el archivo plano generado y pegarlo en esa carpeta.\n5. Ingresar a UTILIDADES > IMPORTAR PLANO. En la ventana emergente configurar:\n   - Información a importar: Reporte de horas.\n   - Tipo de archivo: Posiciones.\n   - Nombre de archivo: el nombre exacto con el que se guardó el plano.\n6. Seleccionar CARGAR PLANO.\n7. Cuando el sistema confirme la carga, seleccionar VALIDAR.\n8. Revisar los registros procesados, los válidos y los que presenten error.\n9. Si no hay errores, seleccionar ACTUALIZAR para registrar las novedades de forma definitiva.\n\nNota: el nombre del archivo debe coincidir exactamente con el registrado al guardar el plano; cualquier diferencia impide que el sistema lo encuentre.\n\nPunto de control: la cantidad de registros procesados debe coincidir con la cantidad de novedades incluidas en el plano.\n\nSi la validación presenta errores:\n- Seleccionar REPORTE para identificar el registro afectado y la causa.\n- Corregir la información en el plano.\n- Eliminar la carga con la opción BORRAR.\n- Repetir la importación hasta obtener una validación exitosa.",imagen:"he/horas_extras_plano_sipe.png" },
+      { titulo: "Validación final", texto: "1. Ingresar a Transacciones > Novedades > Reporte de Horas.\n2. Seleccionar Criterio e ingresar la cédula de un colaborador incluido en el plano.\n\nPunto de control: verificar que las novedades registradas en SIPE coincidan con la información cargada en el archivo plano.",imagen:"he/validacion-horas.png"}
     ]
 },
   {
     id: "auxilio-movilidad-masivo", nombre: "Auxilio de Movilidad Masivo",
-    resumen: "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPEC.",
+    resumen: "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPE.",
     pasos: [
       { titulo: "Identificar valores de auxilio", texto: "Utilizar la columna AUXILIO DE MOVILIDAD obtenida durante el proceso de Horas Extras." },
       { titulo: "Filtrar registros", texto: "Filtrar los registros con valor diferente de cero." },
       { bloque: "determinacionPeriodoNomina" },
       { bloque: "planoPagosDeducciones", params: { concepto: "158" } },
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
     {
     id: "permiso-no-remunerado", nombre: "Permiso No Remunerado (PNR)",
-    resumen: "Desde la clasificación de horas de permiso hasta el registro y validación en SIPEC.",
+    resumen: "Desde la clasificación de horas de permiso hasta el registro y validación en SIPE.",
     pasos: [
-      { titulo: "Origen de la información", texto: "Este proceso registra en SIPEC los descuentos por permisos no remunerados reportados para los colaboradores, para que se apliquen correctamente en nómina.\n\nLa información proviene del proceso Horas Extras Masivo, de las columnas PNR y REDONDEO PNR generadas durante el cálculo de novedades." },
+      { titulo: "Origen de la información", texto: "Este proceso registra en SIPE los descuentos por permisos no remunerados reportados para los colaboradores, para que se apliquen correctamente en nómina.\n\nLa información proviene del proceso Horas Extras Masivo, de las columnas PNR y REDONDEO PNR generadas durante el cálculo de novedades." },
       { titulo: "Ordenar registros", texto: "Ordenar la columna PERMISO NO REMUNERADO de menor a mayor, para identificar los registros que se cargarán por plano y los que requieren registro manual.\n\nNota: si el colaborador presenta 8.4 horas o más, el ingreso debe hacerse de forma manual.", imagen: "permiso-no-remunerado.png" },
-      { titulo: "Separar registros", texto: "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPEC (último paso de este proceso)." },
+      { titulo: "Separar registros", texto: "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPE (último paso de este proceso)." },
       { bloque: "determinacionPeriodoNomina" },
       { titulo: "Construir el plano para permisos menores a 8.4 horas", texto: "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR." },
       { titulo: "Generar el archivo CSV", texto: "1. Copiar todos los registros del plano, sin los encabezados.\n2. Pegarlos en un archivo nuevo de Excel.\n3. Guardar el archivo en formato CSV delimitado por comas.\n4. Usar un nombre que identifique la novedad y la empresa procesada.\n\nEjemplos:\n- PNRAUT.\n- PNRMOB.\n- PNRCEN." },
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { titulo: "Diferencia al cargar este plano", texto: "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones." },
       { bloque: "validacionPosteriorCarga" },
-      { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Los permisos no remunerados de 8.4 horas o más no se cargan por archivo plano. Se registran manualmente en SIPEC, con la misma metodología del registro manual de horas extras del proceso Horas Extras Masivo.\n\nLa única diferencia es el concepto: para permisos no remunerados de 8.4 horas o más se usa el código 035." },
-      { bloque: "registroManualSIPEC", params: { concepto: "035" } }
+      { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Los permisos no remunerados de 8.4 horas o más no se cargan por archivo plano. Se registran manualmente en SIPE, con la misma metodología del registro manual de horas extras del proceso Horas Extras Masivo.\n\nLa única diferencia es el concepto: para permisos no remunerados de 8.4 horas o más se usa el código 035." },
+      { bloque: "registroManualSIPE", params: { concepto: "035" } }
     ]
 },
 
   {
     id: "fondo-empleados", nombre: "Fondo de Empleados",
-    resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
+    resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPE.",
     pasos: [
       { titulo: "Recibir archivo", texto: "Recibir el archivo enviado por Transcender." },
       { titulo: "Guardar archivo", texto: "Guardar el archivo utilizando la nomenclatura establecida.",imagen:"fondo de empleados/fondo-1.png" },
       { titulo: "Ubicar archivo", texto: "Copiar el archivo a la carpeta de planos de SIPE correspondiente." ,imagen:"fondo de empleados/fondo- 2.png"},
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
   {
     id: "novedad-restaurante", nombre: "Novedad del Restaurante",
-    resumen: "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPEC.",
+    resumen: "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPE.",
     pasos: [
       { titulo: "Recibir archivo de consumos", texto: "Recibir el archivo enviado por el responsable del restaurante. Guardarlo en la carpeta correspondiente al período procesado y abrirlo para iniciar la consolidación de la información." },
       { titulo: "Identificar hojas de trabajo", texto: "El archivo contiene cinco hojas. Para este proceso se utilizarán las siguientes:\n- RESUMEN.\n- TESTEO.\n- PALMAS." },
@@ -345,13 +345,13 @@ const PROCESOS = [
       { titulo: "Trasladar novedades de temporales", texto: "En la hoja TEMPORAL, filtrar la información por empresa y copiar los registros al archivo compartido de Novedades Temporales. Ubicar la hoja correspondiente a cada empresa y registrar la novedad." },
       { titulo: "Abrir plano de restaurante", texto: "Abrir la carpeta de PLANOS y ubicar el archivo plano denominado FOOD, correspondiente al registro de esta novedad." },
       { bloque: "planoPagosDeducciones", params: { concepto: "600 - Restaurante", archivo: "FOOD" } },
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
   {
     id: "bonos-productividad", nombre: "Bonos de Productividad",
-    resumen: "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPEC.",
+    resumen: "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPE.",
     pasos: [
       { bloque: "buscarv", params: { columna: "Estado del colaborador" } },
       { bloque: "buscarv", params: { columna: "Empresa del colaborador" } },
@@ -364,7 +364,7 @@ const PROCESOS = [
       { titulo: "Completar información del plano", texto: "Completar los campos requeridos de la plantilla:\n- Columna A: credencial de la empresa correspondiente.\n- Columna B: cédula del colaborador.\n- Columna C: concepto 100, correspondiente a Bono de Productividad.\n- Columna D: valor registrado en la columna BONO PAGAR.\n- Columna I: período correspondiente a la nómina procesada.\n\nCompletar los demás campos requeridos por la plantilla. En las hojas PLANO y FINAL, arrastrar la primera fila formulada hasta completar la totalidad de registros incluidos en el proceso." },
       { titulo: "Validar información del plano", texto: "Verificar que las cédulas y los valores trasladados coincidan con la información contenida en el archivo de bonificaciones mensuales." },
       { titulo: "Guardar archivo", texto: "Guardar el archivo en formato CSV (delimitado por comas), utilizando una nomenclatura que permita identificar la empresa y la novedad registrada.\n\nEjemplos:\n- BONIAUT.\n- BONIMOB.\n- BONICEN.\n- BONIBLU." },
-      { bloque: "cargaPlanoSIPEC" },
+      { bloque: "cargaPlanoSIPE" },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
@@ -385,7 +385,7 @@ const PROCESOS = [
   {
     id: "pago-dias-vacaciones",
     nombre: "Pago días de vacaciones",
-    resumen: "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPEC.",
+    resumen: "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPE.",
     pasos: [
       {
         titulo: "Validar condiciones para la compensación de vacaciones",
@@ -400,7 +400,7 @@ const PROCESOS = [
       },
       {
         titulo: "Consultar información contractual y calcular el valor",
-        texto: `Acceder a SIPEC con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.
+        texto: `Acceder a SIPE con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.
 
 Ingresar la cédula del colaborador y seleccionar la opción "Traer vinculación". El sistema cargará automáticamente la información contractual.
 
@@ -411,7 +411,7 @@ Con base en la información obtenida, calcular el valor de las vacaciones compen
 Punto de control: verificar que la información contractual corresponda al colaborador y que el cálculo se haya realizado correctamente antes de continuar.`
       },
       {
-        titulo: "Registrar la novedad en SIPEC",
+        titulo: "Registrar la novedad en SIPE",
         texto: `Ingresar a la ruta TRANSACCIONES > NOVEDADES > PAGOS Y DEDUCCIONES.
 
 En la ventana emergente:
@@ -427,17 +427,17 @@ Punto de control: verificar que el concepto, valor, cantidad de días y fechas r
       },
       {
         titulo: "Validar y guardar la novedad",
-        texto: "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPEC y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
+        texto: "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPE y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
       }
     ]
   },
   {
     id: "registro-manual-horas-extras", nombre: "Registro manual de horas extras",
-    resumen: "Descarga e ingreso manual de horas extras en SIPEC.",
+    resumen: "Descarga e ingreso manual de horas extras en SIPE.",
     padre: "horas-extras-masivo",
     pasos: [
       { titulo: "Descargar las horas extras", texto: "Descargar el reporte de horas extras del colaborador y validar las horas a registrar." },
-      { bloque: "registroManualSIPEC", params: { concepto: "el que corresponda al tipo de hora extra" } },
+      { bloque: "registroManualSIPE", params: { concepto: "el que corresponda al tipo de hora extra" } },
       { bloque: "validacionPosteriorCarga" }
     ]
   },
@@ -446,7 +446,7 @@ Punto de control: verificar que el concepto, valor, cantidad de días y fechas r
     resumen: "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
     padre: "auxilio-movilidad-masivo",
     pasos: [
-      { bloque: "registroManualSIPEC", params: { concepto: "158" } },
+      { bloque: "registroManualSIPE", params: { concepto: "158" } },
       { bloque: "validacionPosteriorCarga" }
     ]
   }
