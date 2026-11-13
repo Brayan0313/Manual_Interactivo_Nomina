@@ -1,0 +1,47 @@
+{
+  "bloques": [
+    {
+      "id": "buscarv",
+      "titulo": "Validación de colaboradores mediante BUSCARV: {columna}",
+      "texto": "Crear las columnas donde se mostrará la información a consultar.\n \n1. Insertar la función BUSCARV.\n2. Configurar los parámetros:\n   - Valor buscado: cédula del colaborador.\n   - Matriz de búsqueda: base de datos general.\n   - Indicador de columna: el que corresponda a {columna}.\n   - Coincidencia: FALSO.\n3. Arrastrar la fórmula hasta el último registro.\n4. Verificar que todos los registros retornen información válida.\n5. Aplicar filtros para identificar posibles errores o registros sin coincidencias.\n6. Realizar la validación correspondiente según el dato consultado."
+    },
+    {
+      "id": "gestionTemporales",
+      "titulo": "Gestión de personal temporal",
+      "texto": "Identificar colaboradores temporales y trasladar sus novedades al archivo compartido de temporales.\n \nPaso a paso:\n \n1. Aplicar filtros sobre la columna Empresa/Nómina.\n2. Identificar los temporales:\n   - AHORA S.A.S.\n   - AHORA CENCORP.\n   - COMPLEMENTOS HUMANOS.\n   - Otras temporales vigentes.\n3. Copiar los registros filtrados.\n4. Abrir el archivo compartido de Novedades Temporales.\n5. Ubicar la hoja correspondiente a la empresa.\n6. Pegar la información.\n7. Guardar el archivo.\n8. Continuar el proceso únicamente con personal vinculado.\n \nUtilizado en:\n- Productividad CEDI.\n- Horas Extras.\n- Restaurante.\n- Bonos de Productividad."
+    },
+    {
+      "id": "planoPagosDeducciones",
+      "titulo": "Construcción de archivo plano de Pagos y Deducciones",
+      "texto": "Preparar la información para su importación masiva en SIPEC utilizando el formato Pagos y Deducciones.\n \nPaso a paso:\n \n1. Filtrar los registros con valor diferente de cero.\n2. Abrir el archivo plantilla correspondiente.\n3. Completar los campos requeridos:\n   - Empresa.\n   - Cédula.\n   - Concepto: {concepto}.\n   - Valor.\n   - Período.\n4. Verificar que los valores se encuentren correctamente diligenciados.\n5. Extender las fórmulas de las hojas PLANO y FINAL.\n6. Revisar los registros generados.\n7. Guardar el archivo en formato CSV delimitado por comas.\n8. Asignar una nomenclatura corta y estandarizada.",
+      "imagen": "guardar-csv.png"
+    },
+    {
+      "id": "cargaPlanoSIPEC",
+      "titulo": "Carga de archivo plano en SIPEC",
+      "texto": "Importar novedades masivas al sistema SIPEC mediante archivo plano.\n \nPaso a paso:\n \n1. Ingresar a SIPEC con las credenciales correspondientes.\n2. Abrir la opción Exports-SIPE.\n3. Acceder a la carpeta de planos de la empresa.\n4. Copiar el archivo plano en la carpeta correspondiente.\n5. Ingresar a:\n   - Utilidades > Importar Archivo Plano.\n6. Configurar:\n   - Información a importar.\n   - Tipo de archivo.\n   - Nombre exacto del archivo.\n7. Seleccionar Cargar Plano.\n8. Ejecutar Validar.\n9. Revisar:\n   - Procesados.\n   - Válidos.\n   - Errores.\n10. Si existen errores:\n    - Generar reporte.\n    - Corregir archivo.\n    - Eliminar carga.\n    - Repetir proceso.\n11. Si no existen errores:\n    - Seleccionar Actualizar.",
+      "imagen": "importacion-archivo-plano.png"
+    },
+    {
+      "id": "validacionPosteriorCarga",
+      "titulo": "Validación posterior a la carga",
+      "texto": "Confirmar que la novedad quedó registrada correctamente en SIPEC.\n \nPaso a paso:\n \n1. Ingresar al módulo de consulta de la novedad correspondiente.\n2. Seleccionar Criterio.\n3. Consultar un colaborador aleatorio incluido en el cargue.\n4. Verificar:\n   - Cédula.\n   - Concepto.\n   - Valor.\n   - Cantidad.\n   - Período.\n5. Comparar contra el archivo plano.\n6. Confirmar que la información coincida totalmente.",
+      "imagen": "validacion-pagos-deducciones.png"
+    },
+    {
+      "id": "registroManualSIPEC",
+      "titulo": "Registro manual de novedades en SIPEC",
+      "texto": "Registrar una novedad individual directamente en SIPEC cuando no se utilice cargue masivo.\n \nPaso a paso:\n \n1. Ingresar a SIPEC.\n2. Abrir el módulo correspondiente a la novedad.\n3. Ingresar la cédula del colaborador.\n4. Verificar que la información contractual cargue correctamente.\n5. Seleccionar el concepto: {concepto}.\n6. Registrar:\n   - Fechas.\n   - Valores.\n   - Cantidades.\n   - Observaciones requeridas.\n7. Guardar el registro.\n8. Consultar nuevamente la novedad para confirmar su almacenamiento."
+    },
+    {
+      "id": "depuracionBasesTrabajo",
+      "titulo": "Depuración de bases de trabajo",
+      "texto": "Garantizar que la información utilizada para el cargue solo contenga registros válidos.\n \nPaso a paso:\n \n1. Duplicar la hoja original.\n2. Conservar una copia como respaldo.\n3. Eliminar:\n   - Temporales (si aplica).\n   - Retirados.\n   - Registros con valor cero.\n   - Columnas innecesarias.\n4. Confirmar que únicamente permanezcan los registros que serán procesados.\n5. Guardar la versión depurada."
+    },
+    {
+      "id": "determinacionPeriodoNomina",
+      "titulo": "Determinación de período de nómina",
+      "texto": "Definir el período que será utilizado en la novedad o archivo plano.\n \nPaso a paso:\n \n1. Identificar la fecha del proceso.\n2. Determinar la quincena correspondiente.\n3. Verificar el número de período dentro de la secuencia anual (01 a 24).\n4. Registrar el período en el archivo plano o novedad.\n5. Validar que coincida con el período activo en SIPEC."
+    }
+  ]
+}
