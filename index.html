@@ -432,15 +432,37 @@ Punto de control: verificar que el concepto, valor, cantidad de días y fechas r
     ]
   },
   {
-    id: "registro-manual-horas-extras", nombre: "Registro manual de horas extras",
-    resumen: "Descarga e ingreso manual de horas extras en SIPE.",
-    padre: "horas-extras-masivo",
-    pasos: [
-      { titulo: "Descargar las horas extras", texto: "Descargar el reporte de horas extras del colaborador y validar las horas a registrar." },
-      { bloque: "registroManualSIPE", params: { concepto: "el que corresponda al tipo de hora extra" } },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
+  id: "registro-manual-horas-extras",
+  nombre: "Registro manual de horas extras",
+  resumen: "Registro individual de novedades de horas extras directamente en SIPE cuando no se utiliza el cargue masivo.",
+  padre: "horas-extras-masivo",
+  pasos: [
+    {
+      titulo: "Ingresar a reporte de horas",
+      texto: "Acceder a SIPE con las credenciales correspondientes y navegar a la ruta Transacciones > Novedades > Reporte de horas."
+    },
+    {
+      titulo: "Consultar colaborador",
+      texto: "Ingresar la cédula del colaborador en el campo de consulta.",imagen:"HE MANUALES.png"
+    },
+    {
+      titulo: "Validar información automática",
+      texto: "Verificar que los campos Empleado, Nómina y Año se completen automáticamente con la información del colaborador."
+    },
+    {
+      titulo: "Registrar la novedad",
+      texto: "Ingresar manualmente el concepto de la hora extra, la cantidad de horas y los demás campos requeridos según el soporte recibido."
+    },
+    {
+      titulo: "Guardar registro",
+      texto: "Guardar la información para registrar la novedad en el sistema."
+    },
+    {
+      titulo: "Punto de control",
+      texto: "Verificar que la información registrada coincida con el soporte utilizado para el ingreso de la novedad."
+    }
+  ]
+},
   {
     id: "registro-manual-auxilio", nombre: "Registro manual de auxilio",
     resumen: "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
