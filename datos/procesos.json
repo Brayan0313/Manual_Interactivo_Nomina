@@ -1,15 +1,16 @@
 {
   "procesos": [
     {
-      "id": "productividad-cedi",
-      "nombre": "Productividad CEDI",
-      "resumen": "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPE.",
+      "nombre": "Horas Extras Masivo",
+      "resumen": "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPEC.",
       "pasos": [
         {
-          "titulo": "Preparar archivo de trabajo",
-          "texto": "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico."
+          "titulo": "Descargar archivos",
+          "texto": "Descargar los archivos de horas laboradas de Antioquia y Cartagena."
         },
         {
+          "titulo": "Preparar información",
+          "texto": "Bloquear las fechas ya procesadas en cada archivo y consolidar la información en un archivo de trabajo.",
           "bloque": "buscarv",
           "params": [
             {
@@ -22,30 +23,50 @@
           "bloque": "buscarv",
           "params": [
             {
+              "nombre": "novedad",
+              "valor": "Horas Extras"
+            },
+            {
               "nombre": "columna",
-              "valor": "Empresa del colaborador"
+              "valor": "Estado del colaborador"
             }
           ]
         },
         {
           "titulo": "Filtrar valores de pago",
-          "texto": "Filtrar los registros cuyo valor de pago sea diferente de cero."
+          "texto": "Filtrar los registros cuyo valor de pago sea diferente de cero.",
+          "bloque": "buscarv",
+          "params": [
+            {
+              "nombre": "novedad",
+              "valor": "Horas Extras"
+            },
+            {
+              "nombre": "columna",
+              "valor": "Salario del colaborador"
+            }
+          ]
         },
         {
           "bloque": "gestionTemporales"
         },
         {
           "titulo": "Filtrar colaboradores vinculados",
-          "texto": "Filtrar los colaboradores vinculados de Mobility."
+          "texto": "Filtrar los colaboradores vinculados de Mobility.",
+          "bloque": "depuracionBasesTrabajo"
         },
         {
-          "titulo": "Redondear valores",
-          "texto": "Redondear los valores de pago a cero decimales."
+          "titulo": "Calcular horas extras y recargos",
+          "texto": "Calcular RN, HED, HEN, FD, FN, HEDF y HEDN."
         },
         {
+          "titulo": "Calcular Permiso No Remunerado",
+          "texto": "Calcular el valor correspondiente al Permiso No Remunerado (PNR).(USAR PARA EL PROCESO DE PERMISO NO REMUNERADO)",
           "bloque": "determinacionPeriodoNomina"
         },
         {
+          "titulo": "Calcular Auxilio de Movilidad",
+          "texto": "Calcular el valor correspondiente al Auxilio de Movilidad.(USAR PARA EL PROCESO DE AUXILIO DE MOVILIDAD MÁSIVO)",
           "bloque": "planoPagosDeducciones",
           "params": [
             {
@@ -55,83 +76,148 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPE"
+          "titulo": "Aplicar redondeo",
+          "texto": "Aplicar el redondeo correspondiente al PNR.",
+          "bloque": "cargaPlanoSIPEC"
+        },
+        {
+          "bloque": "planoPagosDeducciones",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "Horas Extras"
+            }
+          ]
+        },
+        {
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "horas-extras-masivo"
     },
     {
-      "id": "horas-extras-masivo",
-      "nombre": "Horas Extras Masivo",
-      "resumen": "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPE.",
+      "nombre": "Productividad CEDI",
+      "resumen": "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPEC.",
       "pasos": [
         {
-          "titulo": "Consideraciones generales",
-          "texto": "Las novedades de horas extras se registran por quincena, según estos periodos:\n- Del día 6 al día 20 de cada mes: segunda quincena.\n- Del día 21 al día 5 del mes siguiente: primera quincena.\n\nConceptos utilizados:\n- Recargo Nocturno (RN): 010.\n- Hora Extra Diurna (HED): 045.\n- Auxilio de Movilidad: 158.\n-Hora Extra Nocturna (HEN):046.\n- Festivo Diurno (FD): 011.\n- Festivo Nocturno (FN): 012.\n-Horas Diurnas Extras Festivo(HDEF):047."
-        },
-        {
-          "titulo": "Descargar la información base",
-          "texto": "Verificar que esté disponible el archivo de Excel que contiene las claves de acceso a los documentos de horas laboradas de las sedes de Antioquia y Cartagena.\n\n1. Acceder a la ruta:\n   ESTE EQUIPO > MOBILITY (M) > HORAS LABORADAS > AÑO ACTUAL > MES ACTUAL.\n2. Abrir cada archivo con la clave correspondiente.\n3. En la hoja Horas Nómina de cada archivo, copiar la siguiente información:\n   - Cédula.\n   - Nombre.\n   - Nómina.\n   - Oficio.\n   - Nombre CECO.\n   - Las columnas de novedades que se usarán en el cálculo (TOTAL RN, TOTAL HED,TOTAL HEN,TOTAL FD,TOTAL HEDF,TOTAL HEDN,PERMISO NO REMUNERADO,AUXILIO DE MOVILIDAD).\n4. Pegar (pegar como datos siempre) la información en un archivo de trabajo nuevo de Excel, reuniendo los archivos de Antioquia y Cartagena."
-        },
-        {
-          "titulo": "Bloquear los periodos ya procesados",
-          "texto": "Este procedimiento se realiza en cada archivo descargado de la carpeta de horas laboradas, tanto de Antioquia como de Cartagena.\n\n1. Abrir la hoja HORAS HOMBRE.\n2. Ir a REVISAR > DESPROTEGER HOJA e ingresar la contraseña vigente (2025).\n3. Seleccionar las fechas que hacen parte del cierre de nómina que se esta cerrando.\n4. Aplicar Formato de celda > Proteger > Bloqueada.\n5. Proteger nuevamente la hoja e ingresar la contraseña.\n\nPunto de control: verificar que las fechas del periodo procesado hayan quedado bloqueadas correctamente.",
-          "imagen": "he/Bloquear fechas.png"
-        },
-        {
+          "titulo": "Preparar archivo de trabajo",
+          "texto": "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico.",
           "bloque": "buscarv",
           "params": [
             {
               "nombre": "columna",
               "valor": "Estado del colaborador"
             }
-          ],
-          "imagen": "he/Nuevas-Columnas.png"
+          ]
         },
         {
+          "titulo": "Preparar archivo de trabajo",
+          "texto": "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico.",
           "bloque": "buscarv",
+          "params": [
+            {
+              "nombre": "columna",
+              "valor": "Estado del colaborador"
+            }
+          ]
+        },
+        {
+          "titulo": "Bloquear los periodos ya procesados",
+          "texto": "Este procedimiento se realiza en cada archivo descargado de la carpeta de horas laboradas, tanto de Antioquia como de Cartagena.\n\n1. Abrir la hoja HORAS HOMBRE.\n2. Ir a REVISAR > DESPROTEGER HOJA e ingresar la contraseña vigente (2025).\n3. Seleccionar las fechas que hacen parte del cierre de nómina que se esta cerrando.\n4. Aplicar Formato de celda > Proteger > Bloqueada.\n5. Proteger nuevamente la hoja e ingresar la contraseña.\n\nPunto de control: verificar que las fechas del periodo procesado hayan quedado bloqueadas correctamente.",
+          "imagen": "he/Bloquear fechas.png",
+          "bloque": "buscarv",
+          "params": [
+            {
+              "nombre": "columna",
+              "valor": "Empresa del colaborador"
+            },
+            {
+              "nombre": "columna",
+              "valor": "Estado del colaborador"
+            }
+          ]
+        },
+        {
+          "titulo": "Filtrar valores de pago",
+          "texto": "Filtrar los registros cuyo valor de pago sea diferente de cero.",
+          "imagen": "he/Nuevas-Columnas.png",
+          "bloque": "buscarv",
+          "params": [
+            {
+              "nombre": "novedad",
+              "valor": "Horas Extras"
+            },
+            {
+              "nombre": "columna",
+              "valor": "Salario del colaborador"
+            }
+          ]
+        },
+        {
+          "imagen": "he/Nuevas-Columnas.png",
+          "bloque": "gestionTemporales",
           "params": [
             {
               "nombre": "columna",
               "valor": "Salario del colaborador"
             }
-          ],
-          "imagen": "he/Nuevas-Columnas.png"
+          ]
         },
         {
-          "bloque": "gestionTemporales"
+          "titulo": "Filtrar colaboradores vinculados",
+          "texto": "Filtrar los colaboradores vinculados de Mobility.",
+          "bloque": "depuracionBasesTrabajo"
         },
         {
-          "titulo": "Depurar la base de trabajo",
-          "texto": "Una vez reunida la información de todos los archivos de horas laboradas en el archivo de trabajo, preparar la base para el cargue.\n\n1. Duplicar la hoja que contiene todos los registros descargados.\n2. Renombrar las hojas:\n   - CONSOLIDADO: hoja original con la información completa.\n   - CONSOLIDADO 2: hoja donde se hacen las depuraciones y transformaciones para el cargue.\n3. En la hoja CONSOLIDADO 2:\n   - Eliminar los colaboradores temporales.\n   - Eliminar los colaboradores retirados.\n   - Eliminar las columnas Oficio y Nombre CECO.\n\nPunto de control: confirmar que únicamente permanezcan colaboradores activos vinculados."
-        },
-        {
-          "titulo": "Duplicar columnas y calcular horas extras y recargos",
-          "texto": "1. Duplicar las siguientes columnas y ubicarlas al lado de las originales:\n   - TOTAL RN.\n   - TOTAL HED.\n   - TOTAL HEN.\n   - TOTAL FD.\n   - TOTAL FN.\n   - TOTAL HEDF.\n   - TOTAL HEDN.\n   - PERMISO NO REMUNERADO.\n   - AUXILIO DE MOVILIDAD.\n2. Aplicar un color diferente a las columnas nuevas para distinguirlas de la información original.\n3. En las columnas duplicadas de TOTAL RN, TOTAL HED, TOTAL HEN, TOTAL FD, TOTAL FN, TOTAL HEDF y TOTAL HEDN, multiplicar el valor original por 100 y arrastrar la fórmula hasta el último registro de la base.",
-          "imagen": "he/columnas-consolidadas.png"
+          "titulo": "Redondear valores",
+          "texto": "Redondear los valores de pago a cero decimales."
         },
         {
           "titulo": "Calcular Permiso No Remunerado",
-          "texto": "En la columna duplicada de PERMISO NO REMUNERADO, aplicar la fórmula:\n\n(Salario / 210) * Horas de Permiso No Remunerado\n\nArrastrar la fórmula hasta el último registro.\n\nEste valor también se utiliza en el proceso de Permiso No Remunerado (PNR)."
+          "texto": "Calcular el valor correspondiente al Permiso No Remunerado (PNR).(USAR PARA EL PROCESO DE PERMISO NO REMUNERADO)",
+          "imagen": "he/columnas-consolidadas.png",
+          "bloque": "determinacionPeriodoNomina"
         },
         {
           "titulo": "Calcular Auxilio de Movilidad",
-          "texto": "En la columna duplicada de AUXILIO DE MOVILIDAD, aplicar la fórmula:\n\nHoras de Auxilio de Movilidad * 5530\n\nArrastrar la fórmula hasta el último registro.\n\nEste valor también se utiliza en el proceso de Auxilio de Movilidad Masivo."
+          "texto": "Calcular el valor correspondiente al Auxilio de Movilidad.(USAR PARA EL PROCESO DE AUXILIO DE MOVILIDAD MÁSIVO)",
+          "bloque": "planoPagosDeducciones",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "112 - Productividad"
+            }
+          ]
         },
         {
           "titulo": "Aplicar redondeo",
-          "texto": "Crear una nueva columna llamada REDONDEO PNR y aplicar la función:\n\nREDONDEAR(PNR, 0)\n\nArrastrar la fórmula hasta el último registro. Las columnas deben quedar así:"
+          "texto": "Aplicar el redondeo correspondiente al PNR.",
+          "bloque": "cargaPlanoSIPEC"
+        },
+        {
+          "titulo": "Aplicar redondeo",
+          "texto": "Crear una nueva columna llamada REDONDEO PNR y aplicar la función:\n\nREDONDEAR(PNR, 0)\n\nArrastrar la fórmula hasta el último registro. Las columnas deben quedar así:",
+          "bloque": "validacionPosteriorCarga",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "Horas Extras"
+            }
+          ]
         },
         {
           "titulo": "Construir la hoja PTERCERO del plano",
           "texto": "En la hoja CONSOLIDADO 2, filtrar primero por la empresa que se va a procesar.\n\nCon la empresa filtrada, procesar cada concepto de forma individual (EXCEPTO POR PNR, AUXILIO DE MOVILIDAD , debido a que esas 2 novedades tienen su propio). Para cada concepto:\n1. Aplicar el filtro sobre la columna correspondiente.\n2. Excluir los registros cuyo valor sea 0.\n3. Conservar únicamente los colaboradores con valores para ese concepto.\n4. Registrar la información resultante en la hoja PTERCERO del archivo PLANO HE.\n\nEstructura de la hoja PTERCERO:\n- Columna A: código de la empresa.\n- Columna B: año actual.\n- Columna C: periodo.\n- Columna D: cédula.\n- Columna E: concepto de novedad.\n- Columna F: fecha del periodo.\n- Columna J: cantidad de horas.\n\nNota: ocultar las columnas de conceptos que no se utilizarán (las que no tienen color en el encabezado) y conservar solo las transformadas para el cargue.\n\nPunto de control: verificar que cada concepto se filtró individualmente y que en PTERCERO no hay registros con valor 0.",
-          "imagen": "info de empresas.png"
+          "imagen": "info de empresas.png",
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "titulo": "Generar el archivo plano",
-          "texto": "1. En la hoja PTERCERO del archivo PLANO HE, identificar la cantidad total de filas que contienen información.\n2. Tomar el número de la última fila con datos y restarle 1, porque la primera fila son los encabezados. El resultado es la cantidad de registros que deben existir en las hojas PLANO y FINAL.\n3. Ir a la hoja PLANO, seleccionar la primera fila con fórmula y arrastrarla hasta completar esa cantidad de registros.\n4. Repetir el mismo procedimiento en la hoja FINAL.\n5. Guardar el archivo en formato Texto (MS-DOS) (*.txt) con el nombre HE_NOMBREEMPRESA.\n\nPunto de control: confirmar que PTERCERO, PLANO y FINAL tienen la misma cantidad de registros."
+          "texto": "1. En la hoja PTERCERO del archivo PLANO HE, identificar la cantidad total de filas que contienen información.\n2. Tomar el número de la última fila con datos y restarle 1, porque la primera fila son los encabezados. El resultado es la cantidad de registros que deben existir en las hojas PLANO y FINAL.\n3. Ir a la hoja PLANO, seleccionar la primera fila con fórmula y arrastrarla hasta completar esa cantidad de registros.\n4. Repetir el mismo procedimiento en la hoja FINAL.\n5. Guardar el archivo en formato Texto (MS-DOS) (*.txt) con el nombre HE_NOMBREEMPRESA.\n\nPunto de control: confirmar que PTERCERO, PLANO y FINAL tienen la misma cantidad de registros.",
+          "bloque": "validacionPosteriorCarga"
         },
         {
           "titulo": "Cargar el plano en SIPE",
@@ -143,12 +229,12 @@
           "texto": "1. Ingresar a Transacciones > Novedades > Reporte de Horas.\n2. Seleccionar Criterio e ingresar la cédula de un colaborador incluido en el plano.\n\nPunto de control: verificar que las novedades registradas en SIPE coincidan con la información cargada en el archivo plano.",
           "imagen": "he/validacion-horas.png"
         }
-      ]
+      ],
+      "id": "productividad-cedi"
     },
     {
-      "id": "auxilio-movilidad-masivo",
       "nombre": "Auxilio de Movilidad Masivo",
-      "resumen": "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPE.",
+      "resumen": "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPEC.",
       "pasos": [
         {
           "titulo": "Identificar valores de auxilio",
@@ -171,48 +257,66 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "auxilio-movilidad-masivo"
     },
     {
-      "id": "permiso-no-remunerado",
       "nombre": "Permiso No Remunerado (PNR)",
-      "resumen": "Desde la clasificación de horas de permiso hasta el registro y validación en SIPE.",
+      "resumen": "Desde la clasificación de horas de permiso hasta el registro y validación en SIPEC.",
       "pasos": [
         {
-          "titulo": "Origen de la información",
-          "texto": "Este proceso registra en SIPE los descuentos por permisos no remunerados reportados para los colaboradores, para que se apliquen correctamente en nómina.\n\nLa información proviene del proceso Horas Extras Masivo, de las columnas PNR y REDONDEO PNR generadas durante el cálculo de novedades."
+          "titulo": "Ordenar registros",
+          "texto": "Ordenar la columna Permiso No Remunerado de menor a mayor."
         },
         {
-          "titulo": "Ordenar registros",
-          "texto": "Ordenar la columna PERMISO NO REMUNERADO de menor a mayor, para identificar los registros que se cargarán por plano y los que requieren registro manual.\n\nNota: si el colaborador presenta 8.4 horas o más, el ingreso debe hacerse de forma manual.",
+          "titulo": "Separar registros",
+          "texto": "Separar los registros menores a 8.4 horas y los mayores o iguales a 8.4 horas.",
           "imagen": "permiso-no-remunerado.png"
         },
         {
           "titulo": "Separar registros",
-          "texto": "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPE (último paso de este proceso)."
-        },
-        {
+          "texto": "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPE (último paso de este proceso).",
           "bloque": "determinacionPeriodoNomina"
         },
         {
+          "bloque": "planoPagosDeducciones",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "003"
+            }
+          ]
+        },
+        {
           "titulo": "Construir el plano para permisos menores a 8.4 horas",
-          "texto": "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR."
+          "texto": "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR.",
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "titulo": "Generar el archivo CSV",
-          "texto": "1. Copiar todos los registros del plano, sin los encabezados.\n2. Pegarlos en un archivo nuevo de Excel.\n3. Guardar el archivo en formato CSV delimitado por comas.\n4. Usar un nombre que identifique la novedad y la empresa procesada.\n\nEjemplos:\n- PNRAUT.\n- PNRMOB.\n- PNRCEN."
+          "texto": "1. Copiar todos los registros del plano, sin los encabezados.\n2. Pegarlos en un archivo nuevo de Excel.\n3. Guardar el archivo en formato CSV delimitado por comas.\n4. Usar un nombre que identifique la novedad y la empresa procesada.\n\nEjemplos:\n- PNRAUT.\n- PNRMOB.\n- PNRCEN.",
+          "bloque": "validacionPosteriorCarga"
         },
         {
+          "titulo": "Registrar permisos iguales o superiores a 8.4 horas",
+          "texto": "Para los registros iguales o superiores a 8.4 horas, realizar el registro manual en SIPEC.",
           "bloque": "cargaPlanoSIPE"
         },
         {
           "titulo": "Diferencia al cargar este plano",
-          "texto": "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones."
+          "texto": "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones.",
+          "bloque": "registroManualSIPEC",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "035"
+            }
+          ]
         },
         {
           "bloque": "validacionPosteriorCarga"
@@ -230,12 +334,12 @@
             }
           ]
         }
-      ]
+      ],
+      "id": "permiso-no-remunerado"
     },
     {
-      "id": "fondo-empleados",
       "nombre": "Fondo de Empleados",
-      "resumen": "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPE.",
+      "resumen": "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPEC.",
       "pasos": [
         {
           "titulo": "Recibir archivo",
@@ -252,17 +356,17 @@
           "imagen": "fondo de empleados/fondo- 2.png"
         },
         {
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "fondo-empleados"
     },
     {
-      "id": "novedad-restaurante",
       "nombre": "Novedad del Restaurante",
-      "resumen": "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPE.",
+      "resumen": "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPEC.",
       "pasos": [
         {
           "titulo": "Recibir archivo de consumos",
@@ -322,21 +426,25 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "novedad-restaurante"
     },
     {
-      "id": "bonos-productividad",
       "nombre": "Bonos de Productividad",
-      "resumen": "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPE.",
+      "resumen": "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPEC.",
       "pasos": [
         {
           "bloque": "buscarv",
           "params": [
+            {
+              "nombre": "novedad",
+              "valor": "Bonos de Productividad"
+            },
             {
               "nombre": "columna",
               "valor": "Estado del colaborador"
@@ -346,6 +454,10 @@
         {
           "bloque": "buscarv",
           "params": [
+            {
+              "nombre": "novedad",
+              "valor": "Bonos de Productividad"
+            },
             {
               "nombre": "columna",
               "valor": "Empresa del colaborador"
@@ -400,15 +512,15 @@
           "texto": "Guardar el archivo en formato CSV (delimitado por comas), utilizando una nomenclatura que permita identificar la empresa y la novedad registrada.\n\nEjemplos:\n- BONIAUT.\n- BONIMOB.\n- BONICEN.\n- BONIBLU."
         },
         {
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPEC"
         },
         {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "bonos-productividad"
     },
     {
-      "id": "gestion-paz-y-salvo",
       "nombre": "Gestión de Paz y Salvo",
       "resumen": "Desde la notificación del retiro hasta la validación de obligaciones y novedades pendientes para la liquidación de prestaciones sociales.",
       "pasos": [
@@ -419,12 +531,12 @@
         {
           "titulo": "Registrar información del colaborador",
           "texto": "Registrar la información en el archivo de Control de Paz y Salvo, diligenciando los siguientes campos:\n- Cédula.\n- Nombre completo.\n- Cargo.\n- Fecha de retiro.\n- Motivo de retiro.\n\nVerificar que la información registrada coincida con la reportada en el correo de retiro.",
-          "imagen": "paz y salvo imagenes/archivo-paz-y-salvo-2.png"
+          "imagen": "archivo-paz-y-salvo-2.png"
         },
         {
-          "titulo": "Enviar la solicitud de Paz y Salvo",
+          "titulo": "Enviar solicitud de Paz y Salvo",
           "texto": "Enviar un correo electrónico con el asunto \"Solicitud de Paz y Salvo\" a las áreas responsables de suministrar información sobre posibles novedades pendientes del colaborador.\n\nResponsables del área contable según la empresa:\n- Cencorp: Carolina Baquero Giraldo.\n- Carguesa: Deisy Yarce.\n- Mobility: Alexandra.\n- Blue: María Alejandra Deossa.\n\nIncluir adicionalmente a los siguientes destinatarios:\n- Fondo de empleados.\n- Área de Tecnología.\n- Andrés Garzón (restaurante).\n- Responsable de Contratación (Yessica o Yamile), para la gestión de la carta laboral.",
-          "imagen": "paz y salvo imagenes/archivo-paz-y-salvo-3.png"
+          "imagen": "archivo-paz-y-salvo-3.png"
         },
         {
           "titulo": "Registrar respuestas de las áreas",
@@ -437,7 +549,7 @@
         {
           "titulo": "Organizar soportes del retiro",
           "texto": "Crear una carpeta individual para el colaborador dentro de la subcarpeta de liquidaciones correspondiente a la empresa.\n\nAlmacenar en esta carpeta:\n- Solicitud de Paz y Salvo.\n- Respuestas de las áreas involucradas.\n- Soportes recibidos.\n- Demás documentos relacionados con el proceso de retiro.",
-          "imagen": "paz y salvo imagenes/archivo-paz-y-salvo-4.png"
+          "imagen": "archivo-paz-y-salvo-4.png"
         },
         {
           "titulo": "Validar Paz y Salvo",
@@ -445,15 +557,15 @@
         },
         {
           "titulo": "Validar consumos de restaurante",
-          "texto": "Cuando el colaborador tenga consumos de almuerzos pendientes de descuento al momento de su retiro, verificar el valor correspondiente según su rango salarial y la sede a la que pertenece.Verificar con el responsable del restaurante si el colaborador presenta consumos pendientes de descuento antes de generar la liquidación.",
+          "texto": "Cuando el colaborador tenga consumos de almuerzos pendientes de descuento al momento de su retiro, verificar el valor correspondiente según su rango salarial y la sede a la que pertenece.\n\nValores de referencia:\n\n| Rango salarial | Subsidio | Antioquia | Cartagena |\n|---|---:|---:|---:|\n| 1-2 SM | 80% | $3.321 | $3.614 |\n| 2-3 SM | 50% | $8.328 | $9.036 |\n| 3-4 SM | 25% | $12.492 | $13.554 |\n| 4+ SM | No aplica | $16.656 | $18.702 |\n\nVerificar con el responsable del restaurante si el colaborador presenta consumos pendientes de descuento antes de generar la liquidación.",
           "imagen": "tabla-restaurante.png"
         }
-      ]
+      ],
+      "id": "gestion-paz-y-salvo"
     },
     {
-      "id": "pago-dias-vacaciones",
       "nombre": "Pago días de vacaciones",
-      "resumen": "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPE.",
+      "resumen": "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPEC.",
       "pasos": [
         {
           "titulo": "Validar condiciones para la compensación de vacaciones",
@@ -465,36 +577,51 @@
         },
         {
           "titulo": "Consultar información contractual y calcular el valor",
-          "texto": "Acceder a SIPE con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.\n\nIngresar la cédula del colaborador y seleccionar la opción \"Traer vinculación\". El sistema cargará automáticamente la información contractual.\n\nCon base en la información obtenida, calcular el valor de las vacaciones compensadas mediante la siguiente fórmula:\n\n(Salario Regular Original / 30) * Días que serán compensados\n\nPunto de control: verificar que la información contractual corresponda al colaborador y que el cálculo se haya realizado correctamente antes de continuar."
+          "texto": "Acceder a SIPEC con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.\n\nIngresar la cédula del colaborador y seleccionar la opción \"Traer vinculación\". El sistema cargará automáticamente la información contractual.\n\nCon base en la información obtenida, calcular el valor de las vacaciones compensadas mediante la siguiente fórmula:\n\n(Salario Regular Original / 30) * Días que serán compensados\n\nPunto de control: verificar que la información contractual corresponda al colaborador y que el cálculo se haya realizado correctamente antes de continuar."
         },
         {
-          "titulo": "Registrar la novedad en SIPE",
+          "titulo": "Registrar la novedad en SIPEC",
           "texto": "Ingresar a la ruta TRANSACCIONES > NOVEDADES > PAGOS Y DEDUCCIONES.\n\nEn la ventana emergente:\n- Ingresar la cédula del colaborador.\n- En el campo Concepto, presionar F9 y seleccionar la novedad \"VACACIONES COMPENSADAS\".\n- Registrar el valor calculado en el paso anterior.\n- Registrar la cantidad de días de vacaciones a compensar.\n- Completar los demás campos requeridos y desplazarse hasta el final del registro utilizando la tecla TAB.\n\nNota: En los campos Fecha Inicio de novedad y Fecha final de novedad, introducir fechas corridas que sumen los días que van a ser causados.\n\nPunto de control: verificar que el concepto, valor, cantidad de días y fechas registradas coincidan con la solicitud autorizada."
         },
         {
           "titulo": "Validar y guardar la novedad",
-          "texto": "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPE y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
+          "texto": "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPEC y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
         }
-      ]
+      ],
+      "id": "pago-dias-vacaciones"
     },
     {
-      "id": "registro-manual-horas-extras",
-      "nombre": "Registro manual de horas extras",
-      "resumen": "Registro individual de novedades de horas extras directamente en SIPE cuando no se utiliza el cargue masivo.",
-      "padre": "horas-extras-masivo",
+      "nombre": "Registro manual de auxilio",
+      "resumen": "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
+      "padre": "auxilio-movilidad-masivo",
       "pasos": [
         {
-          "titulo": "Ingresar a reporte de horas",
-          "texto": "Acceder a SIPE con las credenciales correspondientes y navegar a la ruta Transacciones > Novedades > Reporte de horas."
+          "titulo": "Descargar las horas extras",
+          "texto": "Descargar el reporte de horas extras del colaborador y validar las horas a registrar.",
+          "bloque": "registroManualSIPEC",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "158"
+            }
+          ]
         },
         {
           "titulo": "Consultar colaborador",
           "texto": "Ingresar la cédula del colaborador en el campo de consulta.",
-          "imagen": "HE MANUALES.png"
+          "imagen": "HE MANUALES.png",
+          "bloque": "validacionPosteriorCarga",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "el que corresponda al tipo de hora extra"
+            }
+          ]
         },
         {
           "titulo": "Validar información automática",
-          "texto": "Verificar que los campos Empleado, Nómina y Año se completen automáticamente con la información del colaborador."
+          "texto": "Verificar que los campos Empleado, Nómina y Año se completen automáticamente con la información del colaborador.",
+          "bloque": "validacionPosteriorCarga"
         },
         {
           "titulo": "Registrar la novedad",
@@ -508,16 +635,18 @@
           "titulo": "Punto de control",
           "texto": "Verificar que la información registrada coincida con el soporte utilizado para el ingreso de la novedad."
         }
-      ]
+      ],
+      "id": "registro-manual-auxilio"
     },
     {
-      "id": "registro-manual-auxilio",
-      "nombre": "Registro manual de auxilio",
-      "resumen": "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
-      "padre": "auxilio-movilidad-masivo",
+      "nombre": "Registro manual de horas extras",
+      "resumen": "Descarga e ingreso manual de horas extras en SIPEC.",
+      "padre": "horas-extras-masivo",
       "pasos": [
         {
-          "bloque": "registroManualSIPE",
+          "titulo": "Descargar las horas extras",
+          "texto": "Descargar el reporte de horas extras del colaborador y validar las horas a registrar.",
+          "bloque": "registroManualSIPEC",
           "params": [
             {
               "nombre": "concepto",
@@ -526,9 +655,34 @@
           ]
         },
         {
+          "bloque": "registroManualSIPEC",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "el que corresponda al tipo de hora extra"
+            }
+          ]
+        },
+        {
           "bloque": "validacionPosteriorCarga"
         }
-      ]
+      ],
+      "id": "registro-manual-horas-extras"
+    },
+    {
+      "nombre": "Ingreso de Vacaciones por SIPE",
+      "resumen": "Proceso mediante el cual se registra en SIPE una novedad de vacaciones para un colaborador, ingresando la información correspondiente al período de disfrute, fechas y días autorizados, con el fin de garantizar su correcta liquidación y reflejo en nómina. Incluye la validación de los datos registrados contra el soporte aprobado antes de guardar la novedad en el sistema.",
+      "padre": "",
+      "pasos": [
+        {
+          "titulo": "Revisar correo electrónico donde se enviaran todas las novedades.",
+          "texto": "Se recepcionan las solicitudes de vacaciones enviadas por las personas encargadas.",
+          "imagen": "",
+          "bloque": "",
+          "params": []
+        }
+      ],
+      "id": "vacaciones-sipe"
     }
   ]
 }
