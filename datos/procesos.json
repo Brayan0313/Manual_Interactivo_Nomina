@@ -671,12 +671,19 @@
     },
     {
       "nombre": "Ingreso de Vacaciones por SIPE",
-      "resumen": "Proceso mediante el cual se registra en SIPE una novedad de vacaciones para un colaborador, ingresando la información correspondiente al período de disfrute, fechas y días autorizados, con el fin de garantizar su correcta liquidación y reflejo en nómina. Incluye la validación de los datos registrados contra el soporte aprobado antes de guardar la novedad en el sistema.",
+      "resumen": "Proceso mediante el cual se registra en SIPE una novedad de vacaciones para un colaborador, ingresando la información correspondiente al período de disfrute, fechas y días autorizados.",
       "padre": "",
       "pasos": [
         {
           "titulo": "Revisar correo electrónico donde se enviaran todas las novedades.",
-          "texto": "Se recepcionan las solicitudes de vacaciones enviadas por las personas encargadas.",
+          "texto": "Se recepcionan las solicitudes de vacaciones enviadas por las personas encargadas.Donde solicitan las vacaciones con fecha inicial y final.",
+          "imagen": "",
+          "bloque": "",
+          "params": []
+        },
+        {
+          "titulo": "Entrar a Sipe",
+          "texto": "Entrar a SIPE con la siguiente ruta Transacciones>Novedades>Reporte de Labores, dar clic en F3 para buscar por nombre o apellido. Se tiene que diligenciar la información necesaria:\n\n- Periodo correspondiente\n-Fecha inicial-Fecha final\n-Concepto: En el caso de vacaciones es el 200\n-Presionar TAB hasta el dato final\n-Finalmente dar clic en Guardar para dejar terminado el registro.",
           "imagen": "",
           "bloque": "",
           "params": []
