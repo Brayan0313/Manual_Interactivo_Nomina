@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Editar manual de nómina</title>
+  <style>
+    /* Pasos de un proceso: barra azul */
+    .item-list .item-body .item-list > .item > .header {
+      background: #d6e4ff !important;
+      border-left: 6px solid #14275a !important;
+    }
+    /* Datos que cambian dentro de un paso: barra roja suave */
+    .item-list .item-body .item-list .item-body .item-list > .item > .header {
+      background: #fde7ea !important;
+      border-left: 6px solid #c8102e !important;
+    }
+    /* Si el editor está en modo oscuro */
+    [data-theme="dark"] .item-list .item-body .item-list > .item > .header {
+      background: #243a66 !important;
+    }
+    [data-theme="dark"] .item-list .item-body .item-list .item-body .item-list > .item > .header {
+      background: #4a1822 !important;
+    }
+  </style>
 </head>
 <body>
   <!-- Sveltia CMS: lee automáticamente el archivo config.yml de esta misma carpeta -->
