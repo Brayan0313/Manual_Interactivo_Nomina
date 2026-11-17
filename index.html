@@ -6,7 +6,7 @@
 <title>Manual de nómina</title>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ===== 1. COLORES (variables): cambia aquí y cambia todo el manual ===== */
+  /* ===== COLORES: azul oscuro, rojo y gris ===== */
   :root {
     --fondo: #eceff3; --tarjeta: #ffffff; --texto: #1a2433; --suave: #5d6a7c;
     --linea: #d2d8e0; --acento: #14275a; --acento-texto: #ffffff;
@@ -24,468 +24,59 @@
     }
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-  body { margin: 0; background: var(--fondo); color: var(--texto);
+  body { margin: 0; background: var(--fondo); color: var(--texto); border-top: 6px solid var(--rojo);
     font: 16px/1.6 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { max-width: 760px; margin: 0 auto; padding: 24px 18px 64px; }
-  h1 { font-size: 1.9rem; line-height: 1.2; margin: 8px 0 6px; }
-  h2 { font-size: 1.35rem; margin: 0 0 4px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 8px 0 6px; color: var(--titulo); }
+  h2 { font-size: 1.35rem; margin: 0 0 4px; color: var(--titulo); }
   p.sub { color: var(--suave); margin: 0 0 20px; }
   :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
 
-  /* ===== 2. MENÚ PRINCIPAL ===== */
+  /* ===== MENÚ ===== */
   #buscador { width: 100%; box-sizing: border-box; padding: 12px 14px; font: inherit; color: inherit;
     background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; margin-bottom: 14px; }
   .lista { display: grid; gap: 10px; }
   .proceso { text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100%;
     background: var(--tarjeta); border: 1.5px solid var(--linea); border-radius: 10px; padding: 14px 16px; }
-  .proceso:hover { border-color: var(--acento); }
-  .proceso strong { display: block; }
+  .proceso:hover { border-color: var(--rojo); }
+  .proceso strong { display: block; color: var(--titulo); }
   .proceso span { color: var(--suave); font-size: .92rem; }
   .vacio { color: var(--suave); padding: 12px 2px; }
 
-  /* ===== 3. PASO A PASO ===== */
-  .volver { background: none; border: 0; color: var(--acento); font: inherit; font-weight: 600;
+  /* ===== PASO A PASO ===== */
+  .volver { background: none; border: 0; color: var(--rojo); font: inherit; font-weight: 600;
     cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
   ol.pasos { list-style: none; counter-reset: p; padding: 0; margin: 20px 0 0; }
   ol.pasos > li { counter-increment: p; position: relative; background: var(--tarjeta);
-    border: 1.5px solid var(--linea); border-radius: 10px; padding: 14px 16px 14px 56px; margin-bottom: 12px; }
+    border: 1.5px solid var(--linea); border-left: 4px solid var(--acento); border-radius: 10px;
+    padding: 14px 16px 14px 56px; margin-bottom: 12px; }
   ol.pasos > li::before { content: counter(p); position: absolute; left: 14px; top: 14px; width: 28px; height: 28px;
     border-radius: 50%; background: var(--acento); color: var(--acento-texto); font-weight: 700;
     display: grid; place-items: center; font-size: .9rem; }
   .pasos h3 { margin: 0 0 4px; font-size: 1.05rem; }
   .pasos p { margin: 0; white-space: pre-line; }
   .comun { display: inline-block; font-size: .8rem; color: var(--suave); margin-top: 8px; }
-  .param { background: var(--param-fondo); color: var(--param-texto); border-radius: 5px;
-    padding: 0 6px; font-weight: 600; }
+  .param { background: var(--param-fondo); color: var(--param-texto); border-radius: 5px; padding: 0 6px; font-weight: 600; }
   .imagen { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
-  .marcador { margin-top: 10px; border: 1.5px dashed var(--linea); border-radius: 8px; padding: 22px 12px;
-    text-align: center; color: var(--suave); font-size: .9rem; }
-
-  /* ===== 4. TOQUES DE DISEÑO: azul oscuro, rojo y gris ===== */
-  body { border-top: 6px solid var(--rojo); }
-  h1, h2 { color: var(--titulo); }
-  .proceso strong { color: var(--titulo); }
-  .proceso:hover { border-color: var(--rojo); }
-  .volver { color: var(--rojo); }
-  ol.pasos > li { border-left: 4px solid var(--acento); }
 </style>
 </head>
 <body>
-<main id="app"></main>
+<main id="app"><p class="sub">Cargando manual…</p></main>
 
 <script>
 /* =====================================================================
-   DATOS DEL MANUAL  (aquí es donde tú editas el contenido)
+   LOS DATOS YA NO ESTÁN AQUÍ: viven en datos/bloques.json y datos/procesos.json
+   y se editan desde la pantalla /admin (Decap CMS).
+   Este archivo solo contiene el diseño y la lógica.
    ===================================================================== */
-
-/* BLOQUES REUTILIZABLES: se escriben UNA sola vez.
-   Lo que va entre {llaves} es un parámetro que cada proceso rellena. */
-const BLOQUES = {
-  buscarv: {
-    titulo: "Validación de colaboradores mediante BUSCARV: {columna}",
-    texto: `Crear las columnas donde se mostrará la información a consultar.
-
-1. Insertar la función BUSCARV.
-2. Configurar los parámetros:
-   - Valor buscado: cédula del colaborador.
-   - Matriz de búsqueda: base de datos general.
-   - Indicador de columna: el que corresponda a {columna}.
-   - Coincidencia: FALSO.
-3. Arrastrar la fórmula hasta el último registro.
-4. Verificar que todos los registros retornen información válida.
-5. Aplicar filtros para identificar posibles errores o registros sin coincidencias.
-6. Realizar la validación correspondiente según el dato consultado.`,
-    imagen: ""
-  },
-  gestionTemporales: {
-    titulo: "Gestión de personal temporal",
-    texto: `Identificar colaboradores temporales y trasladar sus novedades al archivo compartido de temporales.
-
-Paso a paso:
-
-1. Aplicar filtros sobre la columna Empresa/Nómina.
-2. Identificar los temporales:
-   - AHORA S.A.S.
-   - AHORA CENCORP.
-   - COMPLEMENTOS HUMANOS.
-   - Otras temporales vigentes.
-3. Copiar los registros filtrados.
-4. Abrir el archivo compartido de Novedades Temporales.
-5. Ubicar la hoja correspondiente a la empresa.
-6. Pegar la información.
-7. Guardar el archivo.
-8. Continuar el proceso únicamente con personal vinculado.
-
-Utilizado en:
-- Productividad CEDI.
-- Horas Extras.
-- Restaurante.
-- Bonos de Productividad.`,
-    imagen: ""
-  },
-  planoPagosDeducciones: {
-    titulo: "Construcción de archivo plano de Pagos y Deducciones",
-    texto: `Preparar la información para su importación masiva en SIPE utilizando el formato Pagos y Deducciones.
-
-Paso a paso:
-
-1. Filtrar los registros con valor diferente de cero.
-2. Abrir el archivo plantilla correspondiente.
-3. Completar los campos requeridos:
-   - Empresa.
-   - Cédula.
-   - Concepto: {concepto}.
-   - Valor.
-   - Período.
-4. Verificar que los valores se encuentren correctamente diligenciados.
-5. Extender las fórmulas de las hojas PLANO y FINAL.
-6. Revisar los registros generados.
-7. Guardar el archivo en formato CSV delimitado por comas.
-8. Asignar una nomenclatura corta y estandarizada.`,
-    imagen: "guardar-csv.png"
-  },
-  cargaPlanoSIPE: {
-    titulo: "Carga de archivo plano en SIPE",
-    texto: `Importar novedades masivas al sistema SIPE mediante archivo plano.
-
-Paso a paso:
-
-1. Ingresar a SIPE con las credenciales correspondientes.
-2. Abrir la opción Exports-SIPE.
-3. Acceder a la carpeta de planos de la empresa.
-4. Copiar el archivo plano en la carpeta correspondiente.
-5. Ingresar a:
-   - Utilidades > Importar Archivo Plano.
-6. Configurar:
-   - Información a importar.
-   - Tipo de archivo.
-   - Nombre exacto del archivo.
-7. Seleccionar Cargar Plano.
-8. Ejecutar Validar.
-9. Revisar:
-   - Procesados.
-   - Válidos.
-   - Errores.
-10. Si existen errores:
-    - Generar reporte.
-    - Corregir archivo.
-    - Eliminar carga.
-    - Repetir proceso.
-11. Si no existen errores:
-    - Seleccionar Actualizar.`,
-    imagen: "importacion-archivo-plano.png"
-  },
-  validacionPosteriorCarga: {
-    titulo: "Validación posterior a la carga",
-    texto: `Confirmar que la novedad quedó registrada correctamente en SIPE.
-
-Paso a paso:
-
-1. Ingresar al módulo de consulta de la novedad correspondiente.
-2. Seleccionar Criterio.
-3. Consultar un colaborador aleatorio incluido en el cargue.
-4. Verificar:
-   - Cédula.
-   - Concepto.
-   - Valor.
-   - Cantidad.
-   - Período.
-5. Comparar contra el archivo plano.
-6. Confirmar que la información coincida totalmente.`,
-    imagen: "validacion-pagos-deducciones.png"
-  },
-  registroManualSIPE: {
-    titulo: "Registro manual de novedades en SIPE",
-    texto: `Registrar una novedad individual directamente en SIPE cuando no se utilice cargue masivo.
-
-Paso a paso:
-
-1. Ingresar a SIPE.
-2. Abrir el módulo correspondiente a la novedad.
-3. Ingresar la cédula del colaborador.
-4. Verificar que la información contractual cargue correctamente.
-5. Seleccionar el concepto: {concepto}.
-6. Registrar:
-   - Fechas.
-   - Valores.
-   - Cantidades.
-   - Observaciones requeridas.
-7. Guardar el registro.
-8. Consultar nuevamente la novedad para confirmar su almacenamiento.`,
-    imagen: ""
-  },
-  depuracionBasesTrabajo: {
-    titulo: "Depuración de bases de trabajo",
-    texto: `Garantizar que la información utilizada para el cargue solo contenga registros válidos.
-
-Paso a paso:
-
-1. Duplicar la hoja original.
-2. Conservar una copia como respaldo.
-3. Eliminar:
-   - Temporales (si aplica).
-   - Retirados.
-   - Registros con valor cero.
-   - Columnas innecesarias.
-4. Confirmar que únicamente permanezcan los registros que serán procesados.
-5. Guardar la versión depurada.`,
-    imagen: ""
-  },
-  determinacionPeriodoNomina: {
-    titulo: "Determinación de período de nómina",
-    texto: `Definir el período que será utilizado en la novedad o archivo plano.
-
-Paso a paso:
-
-1. Identificar la fecha del proceso.
-2. Determinar la quincena correspondiente.
-3. Verificar el número de período dentro de la secuencia anual (01 a 24).
-4. Registrar el período en el archivo plano o novedad.
-5. Validar que coincida con el período activo en SIPE.`,
-    imagen: ""
-  }
-};
-
-/* PROCESOS: cada paso es un paso propio (titulo + texto)
-   o una llamada a un bloque: { bloque: "nombre", params: {...} }
-   IMPORTANTE: el nombre después de "bloque:" debe existir en BLOQUES, escrito igual. */
-const PROCESOS = [
-  {
-    id: "productividad-cedi", nombre: "Productividad CEDI",
-    resumen: "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPE.",
-    pasos: [
-      { titulo: "Preparar archivo de trabajo", texto: "Descargar el archivo enviado por el CEDI, abrirlo y duplicar la hoja de trabajo. Eliminar la hoja o sección de resumen y convertir la columna de cédulas a formato numérico." },
-      { bloque: "buscarv", params: { columna: "Estado del colaborador" } },
-      { bloque: "buscarv", params: { columna: "Empresa del colaborador" } },
-      { titulo: "Filtrar valores de pago", texto: "Filtrar los registros cuyo valor de pago sea diferente de cero." },
-      { bloque: "gestionTemporales" },
-      { titulo: "Filtrar colaboradores vinculados", texto: "Filtrar los colaboradores vinculados de Mobility." },
-      { titulo: "Redondear valores", texto: "Redondear los valores de pago a cero decimales." },
-      { bloque: "determinacionPeriodoNomina" },
-      { bloque: "planoPagosDeducciones", params: { concepto: "112 - Productividad" } },
-      { bloque: "cargaPlanoSIPE" },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
-  {
-    id: "horas-extras-masivo", nombre: "Horas Extras Masivo",
-    resumen: "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPE.",
-    pasos: [
-      { titulo: "Consideraciones generales", texto: "Las novedades de horas extras se registran por quincena, según estos periodos:\n- Del día 6 al día 20 de cada mes: segunda quincena.\n- Del día 21 al día 5 del mes siguiente: primera quincena.\n\nConceptos utilizados:\n- Recargo Nocturno (RN): 010.\n- Hora Extra Diurna (HED): 045.\n- Auxilio de Movilidad: 158.\n-Hora Extra Nocturna (HEN):046.\n- Festivo Diurno (FD): 011.\n- Festivo Nocturno (FN): 012.\n-Horas Diurnas Extras Festivo(HDEF):047." },
-      { titulo: "Descargar la información base", texto: "Verificar que esté disponible el archivo de Excel que contiene las claves de acceso a los documentos de horas laboradas de las sedes de Antioquia y Cartagena.\n\n1. Acceder a la ruta:\n   ESTE EQUIPO > MOBILITY (M) > HORAS LABORADAS > AÑO ACTUAL > MES ACTUAL.\n2. Abrir cada archivo con la clave correspondiente.\n3. En la hoja Horas Nómina de cada archivo, copiar la siguiente información:\n   - Cédula.\n   - Nombre.\n   - Nómina.\n   - Oficio.\n   - Nombre CECO.\n   - Las columnas de novedades que se usarán en el cálculo (TOTAL RN, TOTAL HED,TOTAL HEN,TOTAL FD,TOTAL HEDF,TOTAL HEDN,PERMISO NO REMUNERADO,AUXILIO DE MOVILIDAD).\n4. Pegar (pegar como datos siempre) la información en un archivo de trabajo nuevo de Excel, reuniendo los archivos de Antioquia y Cartagena." },
-      { titulo: "Bloquear los periodos ya procesados", texto: "Este procedimiento se realiza en cada archivo descargado de la carpeta de horas laboradas, tanto de Antioquia como de Cartagena.\n\n1. Abrir la hoja HORAS HOMBRE.\n2. Ir a REVISAR > DESPROTEGER HOJA e ingresar la contraseña vigente (2025).\n3. Seleccionar las fechas que hacen parte del cierre de nómina que se esta cerrando.\n4. Aplicar Formato de celda > Proteger > Bloqueada.\n5. Proteger nuevamente la hoja e ingresar la contraseña.\n\nPunto de control: verificar que las fechas del periodo procesado hayan quedado bloqueadas correctamente.", imagen: "he/Bloquear fechas.png" },
-      { bloque: "buscarv", params: { columna: "Estado del colaborador" }, imagen: "he/Nuevas-Columnas.png" },
-      { bloque: "buscarv", params: { columna: "Salario del colaborador" }, imagen: "he/Nuevas-Columnas.png" },
-      { bloque: "gestionTemporales" },
-      { titulo: "Depurar la base de trabajo", texto: "Una vez reunida la información de todos los archivos de horas laboradas en el archivo de trabajo, preparar la base para el cargue.\n\n1. Duplicar la hoja que contiene todos los registros descargados.\n2. Renombrar las hojas:\n   - CONSOLIDADO: hoja original con la información completa.\n   - CONSOLIDADO 2: hoja donde se hacen las depuraciones y transformaciones para el cargue.\n3. En la hoja CONSOLIDADO 2:\n   - Eliminar los colaboradores temporales.\n   - Eliminar los colaboradores retirados.\n   - Eliminar las columnas Oficio y Nombre CECO.\n\nPunto de control: confirmar que únicamente permanezcan colaboradores activos vinculados." },
-      { titulo: "Duplicar columnas y calcular horas extras y recargos", texto: "1. Duplicar las siguientes columnas y ubicarlas al lado de las originales:\n   - TOTAL RN.\n   - TOTAL HED.\n   - TOTAL HEN.\n   - TOTAL FD.\n   - TOTAL FN.\n   - TOTAL HEDF.\n   - TOTAL HEDN.\n   - PERMISO NO REMUNERADO.\n   - AUXILIO DE MOVILIDAD.\n2. Aplicar un color diferente a las columnas nuevas para distinguirlas de la información original.\n3. En las columnas duplicadas de TOTAL RN, TOTAL HED, TOTAL HEN, TOTAL FD, TOTAL FN, TOTAL HEDF y TOTAL HEDN, multiplicar el valor original por 100 y arrastrar la fórmula hasta el último registro de la base.",imagen:"he/columnas-consolidadas.png" },
-      { titulo: "Calcular Permiso No Remunerado", texto: "En la columna duplicada de PERMISO NO REMUNERADO, aplicar la fórmula:\n\n(Salario / 210) * Horas de Permiso No Remunerado\n\nArrastrar la fórmula hasta el último registro.\n\nEste valor también se utiliza en el proceso de Permiso No Remunerado (PNR)." },
-      { titulo: "Calcular Auxilio de Movilidad", texto: "En la columna duplicada de AUXILIO DE MOVILIDAD, aplicar la fórmula:\n\nHoras de Auxilio de Movilidad * 5530\n\nArrastrar la fórmula hasta el último registro.\n\nEste valor también se utiliza en el proceso de Auxilio de Movilidad Masivo." },
-      { titulo: "Aplicar redondeo", texto: "Crear una nueva columna llamada REDONDEO PNR y aplicar la función:\n\nREDONDEAR(PNR, 0)\n\nArrastrar la fórmula hasta el último registro. Las columnas deben quedar así:" },
-      { titulo: "Construir la hoja PTERCERO del plano", texto: "En la hoja CONSOLIDADO 2, filtrar primero por la empresa que se va a procesar.\n\nCon la empresa filtrada, procesar cada concepto de forma individual (EXCEPTO POR PNR, AUXILIO DE MOVILIDAD , debido a que esas 2 novedades tienen su propio). Para cada concepto:\n1. Aplicar el filtro sobre la columna correspondiente.\n2. Excluir los registros cuyo valor sea 0.\n3. Conservar únicamente los colaboradores con valores para ese concepto.\n4. Registrar la información resultante en la hoja PTERCERO del archivo PLANO HE.\n\nEstructura de la hoja PTERCERO:\n- Columna A: código de la empresa.\n- Columna B: año actual.\n- Columna C: periodo.\n- Columna D: cédula.\n- Columna E: concepto de novedad.\n- Columna F: fecha del periodo.\n- Columna J: cantidad de horas.\n\nNota: ocultar las columnas de conceptos que no se utilizarán (las que no tienen color en el encabezado) y conservar solo las transformadas para el cargue.\n\nPunto de control: verificar que cada concepto se filtró individualmente y que en PTERCERO no hay registros con valor 0.",imagen:"he/plano_he.png",imagen:"info de empresas.png"},
-      { titulo: "Generar el archivo plano", texto: "1. En la hoja PTERCERO del archivo PLANO HE, identificar la cantidad total de filas que contienen información.\n2. Tomar el número de la última fila con datos y restarle 1, porque la primera fila son los encabezados. El resultado es la cantidad de registros que deben existir en las hojas PLANO y FINAL.\n3. Ir a la hoja PLANO, seleccionar la primera fila con fórmula y arrastrarla hasta completar esa cantidad de registros.\n4. Repetir el mismo procedimiento en la hoja FINAL.\n5. Guardar el archivo en formato Texto (MS-DOS) (*.txt) con el nombre HE_NOMBREEMPRESA.\n\nPunto de control: confirmar que PTERCERO, PLANO y FINAL tienen la misma cantidad de registros." },
-      { titulo: "Cargar el plano en SIPE", texto: "1. Ingresar a SIPE con las credenciales de la empresa correspondiente y el usuario asignado al área de Nómina.\n2. Seleccionar la opción Exports-SIPE, que abre el explorador de archivos de la empresa.\n3. Ir a la carpeta destinada a los planos de horas extras.\n4. Copiar el archivo plano generado y pegarlo en esa carpeta.\n5. Ingresar a UTILIDADES > IMPORTAR PLANO. En la ventana emergente configurar:\n   - Información a importar: Reporte de horas.\n   - Tipo de archivo: Posiciones.\n   - Nombre de archivo: el nombre exacto con el que se guardó el plano.\n6. Seleccionar CARGAR PLANO.\n7. Cuando el sistema confirme la carga, seleccionar VALIDAR.\n8. Revisar los registros procesados, los válidos y los que presenten error.\n9. Si no hay errores, seleccionar ACTUALIZAR para registrar las novedades de forma definitiva.\n\nNota: el nombre del archivo debe coincidir exactamente con el registrado al guardar el plano; cualquier diferencia impide que el sistema lo encuentre.\n\nPunto de control: la cantidad de registros procesados debe coincidir con la cantidad de novedades incluidas en el plano.\n\nSi la validación presenta errores:\n- Seleccionar REPORTE para identificar el registro afectado y la causa.\n- Corregir la información en el plano.\n- Eliminar la carga con la opción BORRAR.\n- Repetir la importación hasta obtener una validación exitosa.",imagen:"he/horas_extras_plano_sipe.png" },
-      { titulo: "Validación final", texto: "1. Ingresar a Transacciones > Novedades > Reporte de Horas.\n2. Seleccionar Criterio e ingresar la cédula de un colaborador incluido en el plano.\n\nPunto de control: verificar que las novedades registradas en SIPE coincidan con la información cargada en el archivo plano.",imagen:"he/validacion-horas.png"}
-    ]
-},
-  {
-    id: "auxilio-movilidad-masivo", nombre: "Auxilio de Movilidad Masivo",
-    resumen: "Desde la identificación de los valores de auxilio hasta el cargue y validación en SIPE.",
-    pasos: [
-      { titulo: "Identificar valores de auxilio", texto: "Utilizar la columna AUXILIO DE MOVILIDAD obtenida durante el proceso de Horas Extras." },
-      { titulo: "Filtrar registros", texto: "Filtrar los registros con valor diferente de cero." },
-      { bloque: "determinacionPeriodoNomina" },
-      { bloque: "planoPagosDeducciones", params: { concepto: "158" } },
-      { bloque: "cargaPlanoSIPE" },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
-    {
-    id: "permiso-no-remunerado", nombre: "Permiso No Remunerado (PNR)",
-    resumen: "Desde la clasificación de horas de permiso hasta el registro y validación en SIPE.",
-    pasos: [
-      { titulo: "Origen de la información", texto: "Este proceso registra en SIPE los descuentos por permisos no remunerados reportados para los colaboradores, para que se apliquen correctamente en nómina.\n\nLa información proviene del proceso Horas Extras Masivo, de las columnas PNR y REDONDEO PNR generadas durante el cálculo de novedades." },
-      { titulo: "Ordenar registros", texto: "Ordenar la columna PERMISO NO REMUNERADO de menor a mayor, para identificar los registros que se cargarán por plano y los que requieren registro manual.\n\nNota: si el colaborador presenta 8.4 horas o más, el ingreso debe hacerse de forma manual.", imagen: "permiso-no-remunerado.png" },
-      { titulo: "Separar registros", texto: "Separar los registros en dos grupos:\n- Menores a 8.4 horas: se cargan mediante archivo plano.\n- Iguales o superiores a 8.4 horas: se registran manualmente en SIPE (último paso de este proceso)." },
-      { bloque: "determinacionPeriodoNomina" },
-      { titulo: "Construir el plano para permisos menores a 8.4 horas", texto: "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR." },
-      { titulo: "Generar el archivo CSV", texto: "1. Copiar todos los registros del plano, sin los encabezados.\n2. Pegarlos en un archivo nuevo de Excel.\n3. Guardar el archivo en formato CSV delimitado por comas.\n4. Usar un nombre que identifique la novedad y la empresa procesada.\n\nEjemplos:\n- PNRAUT.\n- PNRMOB.\n- PNRCEN." },
-      { bloque: "cargaPlanoSIPE" },
-      { titulo: "Diferencia al cargar este plano", texto: "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones." },
-      { bloque: "validacionPosteriorCarga" },
-      { titulo: "Registrar permisos iguales o superiores a 8.4 horas", texto: "Los permisos no remunerados de 8.4 horas o más no se cargan por archivo plano. Se registran manualmente en SIPE, con la misma metodología del registro manual de horas extras del proceso Horas Extras Masivo.\n\nLa única diferencia es el concepto: para permisos no remunerados de 8.4 horas o más se usa el código 035." },
-      { bloque: "registroManualSIPE", params: { concepto: "035" } }
-    ]
-},
-
-  {
-    id: "fondo-empleados", nombre: "Fondo de Empleados",
-    resumen: "Desde la recepción del archivo de Transcender hasta el cargue y validación en SIPE.",
-    pasos: [
-      { titulo: "Recibir archivo", texto: "Recibir el archivo enviado por Transcender." },
-      { titulo: "Guardar archivo", texto: "Guardar el archivo utilizando la nomenclatura establecida.",imagen:"fondo de empleados/fondo-1.png" },
-      { titulo: "Ubicar archivo", texto: "Copiar el archivo a la carpeta de planos de SIPE correspondiente." ,imagen:"fondo de empleados/fondo- 2.png"},
-      { bloque: "cargaPlanoSIPE" },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
-  {
-    id: "novedad-restaurante", nombre: "Novedad del Restaurante",
-    resumen: "Desde la recepción y consolidación de consumos hasta el cargue y validación de los descuentos en SIPE.",
-    pasos: [
-      { titulo: "Recibir archivo de consumos", texto: "Recibir el archivo enviado por el responsable del restaurante. Guardarlo en la carpeta correspondiente al período procesado y abrirlo para iniciar la consolidación de la información." },
-      { titulo: "Identificar hojas de trabajo", texto: "El archivo contiene cinco hojas. Para este proceso se utilizarán las siguientes:\n- RESUMEN.\n- TESTEO.\n- PALMAS." },
-      { titulo: "Actualizar información de colaboradores", texto: "Antes de iniciar la consolidación, actualizar el archivo CONTROL QUINCENAL DE RESTAURANTE con la información de Estado (Activo o Retirado) y Salario, consultando la base de datos general. (PREGUNTAR)." },
-      { titulo: "Consolidar información de Antioquia", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CEDIGUARNE.\n- FABRICATO_RIONEGRO.\n- PLANTA_1.\n- PLANTARIONEGRO.\n- ROSENDAL.\n\nCopiar las columnas CÉDULA y NOMBRE y trasladarlas al archivo CONTROL QUINCENAL DE RESTAURANTE. Posteriormente, copiar la cantidad de consumos y registrarla en la columna CONSUMOS. Repetir el procedimiento con las hojas TESTEO y PALMAS.",imagen:"restaurante/informacion-antioquia.png"},
-      { titulo: "Validar consolidación de Antioquia", texto: "Verificar que las cédulas se encuentren en formato numérico y que las cantidades de consumos hayan sido trasladadas correctamente. Tener presente que pueden aparecer registros de personas que no pertenecen habitualmente a la nómina." },
-      { titulo: "Consolidar información de Cartagena", texto: "En la hoja RESUMEN, filtrar los colaboradores pertenecientes a las siguientes sedes:\n- CARTAGENA.\n- CARTAGENAP3.\n\nCopiar la información correspondiente y trasladarla a la hoja CARTAGENA del archivo CONTROL QUINCENAL DE RESTAURANTE. Registrar los consumos reportados y completar las fórmulas requeridas." },
-      { titulo: "Validar consolidación de Cartagena", texto: "Verificar que la totalidad de los registros de Cartagena haya sido trasladada correctamente al archivo de control." },
-      { bloque: "gestionTemporales" },
-      { titulo: "Consolidar temporales", texto: "Filtrar en el archivo quincenal todos los colaboradores pertenecientes a las siguientes empresas temporales:\n- AHORA CENCORP.\n- AHORA S.A.S (AUT).\n- AHORA S.A.S (CG).\n- AHORA S.A.S (MOB).\n- COMPLEMENTOS HUMANOS (MOB).\n\nCopiar todos los registros filtrados, sin excepción, y trasladarlos a la hoja TEMPORAL del archivo quincenal. Incluir tanto los temporales de Antioquia como los de Cartagena." },
-      { titulo: "Trasladar novedades de temporales", texto: "En la hoja TEMPORAL, filtrar la información por empresa y copiar los registros al archivo compartido de Novedades Temporales. Ubicar la hoja correspondiente a cada empresa y registrar la novedad." },
-      { titulo: "Abrir plano de restaurante", texto: "Abrir la carpeta de PLANOS y ubicar el archivo plano denominado FOOD, correspondiente al registro de esta novedad." },
-      { bloque: "planoPagosDeducciones", params: { concepto: "600 - Restaurante", archivo: "FOOD" } },
-      { bloque: "cargaPlanoSIPE" },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
-  {
-    id: "bonos-productividad", nombre: "Bonos de Productividad",
-    resumen: "Desde la validación de colaboradores y bonificaciones hasta el cargue y validación en SIPE.",
-    pasos: [
-      { bloque: "buscarv", params: { columna: "Estado del colaborador" } },
-      { bloque: "buscarv", params: { columna: "Empresa del colaborador" } },
-      { titulo: "Validar información de colaboradores", texto: "Verificar que todos los colaboradores incluidos en el proceso cuenten con información de estado y empresa. Identificar y resaltar los colaboradores retirados." },
-      { bloque: "gestionTemporales" },
-      { titulo: "Filtrar colaboradores permanentes", texto: "Una vez retirados los registros temporales, filtrar los colaboradores permanentes por empresa. Posteriormente, filtrar la columna BONO PAGAR y excluir los registros cuyo valor sea igual a 0." },
-      { titulo: "Validar bonificaciones pendientes", texto: "Verificar que únicamente permanezcan colaboradores con valores de bonificación pendientes de pago." },
-      { bloque: "determinacionPeriodoNomina" },
-      { bloque: "planoPagosDeducciones", params: { concepto: "100 - Bono de Productividad", archivo: "PAGOS Y DEDUCCIONES PLANO", valor: "BONO PAGAR" } },
-      { titulo: "Completar información del plano", texto: "Completar los campos requeridos de la plantilla:\n- Columna A: credencial de la empresa correspondiente.\n- Columna B: cédula del colaborador.\n- Columna C: concepto 100, correspondiente a Bono de Productividad.\n- Columna D: valor registrado en la columna BONO PAGAR.\n- Columna I: período correspondiente a la nómina procesada.\n\nCompletar los demás campos requeridos por la plantilla. En las hojas PLANO y FINAL, arrastrar la primera fila formulada hasta completar la totalidad de registros incluidos en el proceso." },
-      { titulo: "Validar información del plano", texto: "Verificar que las cédulas y los valores trasladados coincidan con la información contenida en el archivo de bonificaciones mensuales." },
-      { titulo: "Guardar archivo", texto: "Guardar el archivo en formato CSV (delimitado por comas), utilizando una nomenclatura que permita identificar la empresa y la novedad registrada.\n\nEjemplos:\n- BONIAUT.\n- BONIMOB.\n- BONICEN.\n- BONIBLU." },
-      { bloque: "cargaPlanoSIPE" },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  },
-  {
-    id: "gestion-paz-y-salvo", nombre: "Gestión de Paz y Salvo",
-    resumen: "Desde la notificación del retiro hasta la validación de obligaciones y novedades pendientes para la liquidación de prestaciones sociales.",
-    pasos: [
-      { titulo: "Recibir notificación de retiro", texto: "Recibir el correo electrónico mediante el cual se informa el retiro del colaborador, independientemente del motivo de desvinculación (renuncia, pensión, terminación de contrato, entre otros).\n\nVerificar que el correo contenga la siguiente información:\n- Nombre del colaborador.\n- Número de identificación.\n- Fecha de retiro.\n- Observaciones relevantes." },
-      { titulo: "Registrar información del colaborador", texto: "Registrar la información en el archivo de Control de Paz y Salvo, diligenciando los siguientes campos:\n- Cédula.\n- Nombre completo.\n- Cargo.\n- Fecha de retiro.\n- Motivo de retiro.\n\nVerificar que la información registrada coincida con la reportada en el correo de retiro.", imagen: "paz y salvo imagenes/archivo-paz-y-salvo-2.png" },
-      { titulo: "Enviar la solicitud de Paz y Salvo", texto: "Enviar un correo electrónico con el asunto \"Solicitud de Paz y Salvo\" a las áreas responsables de suministrar información sobre posibles novedades pendientes del colaborador.\n\nResponsables del área contable según la empresa:\n- Cencorp: Carolina Baquero Giraldo.\n- Carguesa: Deisy Yarce.\n- Mobility: Alexandra.\n- Blue: María Alejandra Deossa.\n\nIncluir adicionalmente a los siguientes destinatarios:\n- Fondo de empleados.\n- Área de Tecnología.\n- Andrés Garzón (restaurante).\n- Responsable de Contratación (Yessica o Yamile), para la gestión de la carta laboral.", imagen: "paz y salvo imagenes/archivo-paz-y-salvo-3.png" },
-      { titulo: "Registrar respuestas de las áreas", texto: "Registrar en el archivo de Control de Paz y Salvo la información suministrada por cada una de las áreas consultadas. Cuando algún concepto no aplique al colaborador o no exista relación con el área correspondiente, registrar N/A (no aplica)." },
-      { titulo: "Identificar novedades pendientes", texto: "Registrar las novedades reportadas por las diferentes áreas, entre las que pueden encontrarse:\n- Bono de celular.\n- Equipos pendientes por entregar.\n- Saldos pendientes.\n- Comisiones pendientes de pago.\n- Bonificaciones pendientes.\n- Otras novedades que puedan impactar la liquidación.\n\nVerificar que todas las áreas requeridas hayan respondido antes de continuar con el proceso." },
-      { titulo: "Organizar soportes del retiro", texto: "Crear una carpeta individual para el colaborador dentro de la subcarpeta de liquidaciones correspondiente a la empresa.\n\nAlmacenar en esta carpeta:\n- Solicitud de Paz y Salvo.\n- Respuestas de las áreas involucradas.\n- Soportes recibidos.\n- Demás documentos relacionados con el proceso de retiro.", imagen: "paz y salvo imagenes/archivo-paz-y-salvo-4.png" },
-      { titulo: "Validar Paz y Salvo", texto: "Una vez recibida y validada toda la información del Paz y Salvo, confirmar que no existan novedades pendientes de revisión antes de generar la liquidación de las prestaciones sociales del colaborador." },
-      { titulo: "Validar consumos de restaurante", texto: "Cuando el colaborador tenga consumos de almuerzos pendientes de descuento al momento de su retiro, verificar el valor correspondiente según su rango salarial y la sede a la que pertenece.Verificar con el responsable del restaurante si el colaborador presenta consumos pendientes de descuento antes de generar la liquidación.",imagen:"tabla-restaurante.png"}
-    ]
-  },
-  {
-    id: "pago-dias-vacaciones",
-    nombre: "Pago días de vacaciones",
-    resumen: "Gestionar el pago de vacaciones compensadas para colaboradores que, por motivos de calamidad y previa autorización de Talento Humano, solicitan recibir en dinero determinados días de vacaciones. Incluye la validación de requisitos, el cálculo del valor y el registro de la novedad en SIPE.",
-    pasos: [
-      {
-        titulo: "Validar condiciones para la compensación de vacaciones",
-        texto: `Verificar que el colaborador cumpla con las siguientes condiciones:
-- Contar con más de 30 días de vacaciones causadas.
-- Contar con autorización previa de Talento Humano.
-- Aplicar únicamente en situaciones de calamidad.`
-      },
-      {
-        titulo: "Recepción de autorización",
-        texto: "Recibir el correo electrónico enviado por el área de Talento Humano mediante el cual se autoriza la compensación de vacaciones del colaborador."
-      },
-      {
-        titulo: "Consultar información contractual y calcular el valor",
-        texto: `Acceder a SIPE con el usuario y contraseña correspondiente e ingresar a la ruta ARCHIVOS > NOMINA > VINCULACIONES.
-
-Ingresar la cédula del colaborador y seleccionar la opción "Traer vinculación". El sistema cargará automáticamente la información contractual.
-
-Con base en la información obtenida, calcular el valor de las vacaciones compensadas mediante la siguiente fórmula:
-
-(Salario Regular Original / 30) * Días que serán compensados
-
-Punto de control: verificar que la información contractual corresponda al colaborador y que el cálculo se haya realizado correctamente antes de continuar.`
-      },
-      {
-        titulo: "Registrar la novedad en SIPE",
-        texto: `Ingresar a la ruta TRANSACCIONES > NOVEDADES > PAGOS Y DEDUCCIONES.
-
-En la ventana emergente:
-- Ingresar la cédula del colaborador.
-- En el campo Concepto, presionar F9 y seleccionar la novedad "VACACIONES COMPENSADAS".
-- Registrar el valor calculado en el paso anterior.
-- Registrar la cantidad de días de vacaciones a compensar.
-- Completar los demás campos requeridos y desplazarse hasta el final del registro utilizando la tecla TAB.
-
-Nota: En los campos Fecha Inicio de novedad y Fecha final de novedad, introducir fechas corridas que sumen los días que van a ser causados.
-
-Punto de control: verificar que el concepto, valor, cantidad de días y fechas registradas coincidan con la solicitud autorizada.`
-      },
-      {
-        titulo: "Validar y guardar la novedad",
-        texto: "Validar la información registrada en el sistema. Una vez confirmada su exactitud, guardar la novedad para que quede registrada en SIPE y sea considerada en el proceso de nómina correspondiente. Punto de control: verificar que el sistema haya almacenado correctamente la novedad y que esta se encuentre disponible para consulta."
-      }
-    ]
-  },
-  {
-  id: "registro-manual-horas-extras",
-  nombre: "Registro manual de horas extras",
-  resumen: "Registro individual de novedades de horas extras directamente en SIPE cuando no se utiliza el cargue masivo.",
-  padre: "horas-extras-masivo",
-  pasos: [
-    {
-      titulo: "Ingresar a reporte de horas",
-      texto: "Acceder a SIPE con las credenciales correspondientes y navegar a la ruta Transacciones > Novedades > Reporte de horas."
-    },
-    {
-      titulo: "Consultar colaborador",
-      texto: "Ingresar la cédula del colaborador en el campo de consulta.",imagen:"HE MANUALES.png"
-    },
-    {
-      titulo: "Validar información automática",
-      texto: "Verificar que los campos Empleado, Nómina y Año se completen automáticamente con la información del colaborador."
-    },
-    {
-      titulo: "Registrar la novedad",
-      texto: "Ingresar manualmente el concepto de la hora extra, la cantidad de horas y los demás campos requeridos según el soporte recibido."
-    },
-    {
-      titulo: "Guardar registro",
-      texto: "Guardar la información para registrar la novedad en el sistema."
-    },
-    {
-      titulo: "Punto de control",
-      texto: "Verificar que la información registrada coincida con el soporte utilizado para el ingreso de la novedad."
-    }
-  ]
-},
-  {
-    id: "registro-manual-auxilio", nombre: "Registro manual de auxilio",
-    resumen: "Registro individual del auxilio de movilidad cuando no se usa el cargue masivo.",
-    padre: "auxilio-movilidad-masivo",
-    pasos: [
-      { bloque: "registroManualSIPE", params: { concepto: "158" } },
-      { bloque: "validacionPosteriorCarga" }
-    ]
-  }
-  /* Para agregar otro proceso: pon una coma después de la llave } de arriba
-     y copia aquí un proceso nuevo con otro id. */
-];
-
-/* =====================================================================
-   CÓDIGO (lo que hace que todo funcione)
-   ===================================================================== */
+let BLOQUES = {};
+let PROCESOS = [];
 const app = document.getElementById("app");
 
-/* Escapa texto para que nunca se interprete como HTML (buena práctica de seguridad) */
-const limpiar = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* Escapa texto para que nunca se interprete como HTML */
+const limpiar = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-/* Reemplaza cada {parametro} por su valor, resaltado.
-   Si un parámetro no existe, deja visible {nombre} para que notes el error. */
+/* Reemplaza cada {parametro} por su valor, resaltado */
 function rellenar(plantilla, params = {}) {
   return limpiar(plantilla).replace(/\{(\w+)\}/g, (_, clave) =>
     clave in params ? `<span class="param">${limpiar(params[clave])}</span>` : `{${clave}}`);
@@ -494,23 +85,20 @@ function rellenar(plantilla, params = {}) {
 /* Convierte un paso (propio o de bloque) en un <li> */
 function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
-  if (paso.bloque) {                       // paso que usa un bloque reutilizable
+  if (paso.bloque) {
     const b = BLOQUES[paso.bloque];
-    // Si el nombre del bloque no existe, avisa en vez de romper la página
     if (!b) return `<li><h3>Falta el bloque: ${limpiar(paso.bloque)}</h3>
-      <p>Revisa que este nombre exista en BLOQUES, escrito igual.</p></li>`;
+      <p>Revisa que este bloque exista en el CMS, escrito igual.</p></li>`;
     titulo = rellenar(b.titulo, paso.params);
     texto  = rellenar(b.texto, paso.params);
-    imagen = paso.imagen || b.imagen;      // la del paso manda; si no hay, usa la del bloque
+    imagen = paso.imagen || b.imagen || "";
     etiqueta = '<span class="comun">Paso común a varios procesos</span>';
-  } else {                                 // paso propio del proceso
+  } else {
     titulo = rellenar(paso.titulo, paso.params);
     texto  = rellenar(paso.texto, paso.params);
     imagen = paso.imagen || "";
   }
-  const media = imagen
-    ? `<img class="imagen" src="${imagen}" alt="Captura del paso">`
-    : "";
+  const media = imagen ? `<img class="imagen" src="${limpiar(imagen)}" alt="Captura del paso">` : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
 
@@ -523,35 +111,33 @@ function verMenu() {
     <div class="lista" id="lista"></div>`;
   const lista = document.getElementById("lista");
   const buscador = document.getElementById("buscador");
-
   function filtrar() {
     const q = buscador.value.toLowerCase();
-    // Busca en nombre, resumen y también dentro del texto de los pasos
     const hallados = PROCESOS.filter(p => !p.padre &&
       (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
     lista.innerHTML = hallados.length
-      ? hallados.map(p => `<button class="proceso" data-id="${p.id}">
+      ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}">
           <strong>${limpiar(p.nombre)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
-      : '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra, por ejemplo: plano o plataforma.</p>';
+      : '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>';
   }
   buscador.addEventListener("input", filtrar);
   lista.addEventListener("click", e => {
     const b = e.target.closest("button[data-id]");
-    if (b) location.hash = b.dataset.id;   // cambia la dirección: #productividad-cedi
+    if (b) location.hash = b.dataset.id;
   });
   filtrar();
 }
 
-/* PANTALLA 2: paso a paso de un proceso */
+/* PANTALLA 2: paso a paso de un proceso (con subprocesos si tiene) */
 function verProceso(p) {
-  const hijos = PROCESOS.filter(x => x.padre === p.id);   // subprocesos de este proceso
-  const padre = PROCESOS.find(x => x.id === p.padre);     // si este es subproceso, su padre
+  const hijos = PROCESOS.filter(x => x.padre === p.id);
+  const padre = PROCESOS.find(x => x.id === p.padre);
   app.innerHTML = `
     <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver al menú"}</button>
     <h2>${limpiar(p.nombre)}</h2>
     <p class="sub">${limpiar(p.resumen)}</p>
     ${hijos.length ? `<h3>Subprocesos</h3>
-      <div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${h.id}">
+      <div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${limpiar(h.id)}">
         <strong>${limpiar(h.nombre)}</strong><span>${limpiar(h.resumen)}</span></button>`).join("")}</div>` : ""}
     <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
   document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : ""; };
@@ -569,11 +155,32 @@ function navegar() {
   const p = PROCESOS.find(x => x.id === id);
   p ? verProceso(p) : verMenu();
 }
-window.addEventListener("hashchange", navegar);
-navegar();
 
-/* NOTA SOBRE IMÁGENES: guarda las imágenes en el repositorio junto a este archivo
-   y escribe, por ejemplo, imagen: "plano.png". */
+/* CARGA DE DATOS: lee datos/manual.json y arranca la página */
+const cargar = url => fetch(url, { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(url); return r.json(); });
+
+/* Primero intenta leer los dos archivos nuevos; si no existen, usa manual.json */
+Promise.all([cargar("datos/bloques.json"), cargar("datos/procesos.json")])
+  .then(([b, p]) => ({ bloques: b.bloques, procesos: p.procesos }))
+  .catch(() => cargar("datos/manual.json"))
+  .then(d => {
+    // Los bloques llegan como lista; los pasamos a un diccionario por id
+    BLOQUES = Object.fromEntries((d.bloques || []).map(b => [b.id, b]));
+    // Los parámetros llegan como lista [{nombre, valor}]; los pasamos a objeto
+    PROCESOS = (d.procesos || []).map(p => ({
+      ...p,
+      pasos: (p.pasos || []).map(s => ({
+        ...s,
+        params: Object.fromEntries((s.params || []).map(x => [x.nombre, x.valor]))
+      }))
+    }));
+    window.addEventListener("hashchange", navegar);
+    navegar();
+  })
+  .catch(() => {
+    app.innerHTML = '<h1>No se pudo cargar el manual</h1><p class="sub">Falta el archivo datos/manual.json o no se puede leer. Avisa al responsable del manual.</p>';
+  });
 </script>
 </body>
 </html>
