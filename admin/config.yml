@@ -1,80 +1,102 @@
+# ============================================================
+# CONFIGURACIÓN DEL EDITOR (versión simplificada)
+# Dos secciones: "Procesos del manual" y "Pasos que se repiten"
+# ============================================================
+
 backend:
   name: github
-  repo: Brayan0313/Manual_Interactivo_Nomina
+  repo: Brayan0313/Manual_Interactivo_Nomina   # usuario/repositorio
   branch: main
-  # Cuando tengas el servicio de inicio de sesión, quita el # y pega su dirección:
-  # base_url: https://TU-SERVICIO-DE-LOGIN.workers.dev
 
 locale: es
 
+# Dónde se guardan las imágenes que suban desde el editor
 media_folder: "img"
 public_folder: "img"
 
 collections:
-  - name: manual
-    label: "Manual de nómina"
+
+  # ---------------------------------------------------------
+  # SECCIÓN 1: PROCESOS
+  # ---------------------------------------------------------
+  - name: procesos
+    label: "Procesos del manual"
     files:
-      - name: datos
-        label: "Contenido del manual"
-        file: "datos/manual.json"
+      - name: procesos
+        label: "Lista de procesos"
+        file: "datos/procesos.json"
         fields:
-
-          - label: "Bloques reutilizables"
-            name: bloques
-            widget: list
-            label_singular: "bloque"
-            summary: "{{fields.titulo}}"
-            hint: "Pasos que se repiten en varios procesos. Use {nombre} para marcar un dato que cambia en cada proceso."
-            fields:
-              - { label: "Identificador", name: id, widget: string, hint: "Sin espacios ni tildes. No lo cambie después de crearlo." }
-              - { label: "Título", name: titulo, widget: string }
-              - { label: "Texto", name: texto, widget: text }
-              - { label: "Imagen", name: imagen, widget: image, required: false }
-
           - label: "Procesos"
             name: procesos
             widget: list
             label_singular: "proceso"
             summary: "{{fields.nombre}}"
+            collapsed: true
             fields:
-              - { label: "Identificador", name: id, widget: string, hint: "En minúsculas, sin espacios ni tildes, con guiones. No lo cambie después de crearlo." }
-              - { label: "Nombre", name: nombre, widget: string }
-              - { label: "Resumen", name: resumen, widget: text }
-              - label: "Es subproceso de"
+              - { label: "Nombre del proceso", name: nombre, widget: string, hint: "Como se verá en el menú del manual." }
+              - { label: "Descripción corta", name: resumen, widget: text, hint: "Una o dos frases que se ven debajo del nombre." }
+              - label: "Pertenece al proceso (solo si es un subproceso)"
                 name: padre
                 widget: relation
-                collection: manual
-                file: datos
+                collection: procesos
+                file: procesos
                 search_fields: ["procesos.*.nombre"]
                 value_field: "procesos.*.id"
                 display_fields: ["procesos.*.nombre"]
                 required: false
                 hint: "Déjelo vacío si es un proceso principal."
-              - label: "Pasos"
+              - label: "Pasos del proceso"
                 name: pasos
                 widget: list
                 label_singular: "paso"
                 summary: "{{fields.titulo}}{{fields.bloque}}"
-                hint: "Escriba un título y texto propios, O elija un bloque reutilizable (no ambos)."
+                collapsed: true
+                hint: "Use + para agregar un paso. En cada paso escriba el título y el texto, O elija un paso que se repite (no ambos)."
                 fields:
-                  - { label: "Título", name: titulo, widget: string, required: false }
-                  - { label: "Texto", name: texto, widget: text, required: false }
-                  - label: "Bloque reutilizable"
+                  - { label: "Título del paso", name: titulo, widget: string, required: false }
+                  - { label: "Qué se hace en este paso", name: texto, widget: text, required: false }
+                  - { label: "Captura de pantalla (opcional)", name: imagen, widget: image, required: false }
+                  - label: "O elija un paso que se repite"
                     name: bloque
                     widget: relation
-                    collection: manual
-                    file: datos
+                    collection: bloques
+                    file: bloques
                     search_fields: ["bloques.*.titulo"]
                     value_field: "bloques.*.id"
                     display_fields: ["bloques.*.titulo"]
                     required: false
-                  - label: "Datos que cambian en este bloque"
+                    hint: "Si elige uno, no hace falta escribir título ni texto."
+                  - label: "Datos que cambian en ese paso (opcional)"
                     name: params
                     widget: list
                     label_singular: "dato"
                     required: false
-                    hint: "Ejemplo: nombre = concepto, valor = 158. Solo si el bloque tiene {llaves}."
+                    collapsed: false
+                    hint: "Solo si el paso repetido tiene datos entre llaves {así}. Ejemplo: Nombre = concepto, Valor = 158."
                     fields:
-                      - { label: "Nombre", name: nombre, widget: string }
+                      - { label: "Nombre del dato", name: nombre, widget: string }
                       - { label: "Valor", name: valor, widget: string }
-                  - { label: "Imagen de este paso", name: imagen, widget: image, required: false }
+              - { label: "Código del proceso (no cambiar)", name: id, widget: string, hint: "Uso interno. Minúsculas, sin espacios ni tildes, con guiones. No lo modifique en procesos que ya existen." }
+
+  # ---------------------------------------------------------
+  # SECCIÓN 2: PASOS QUE SE REPITEN (BLOQUES)
+  # ---------------------------------------------------------
+  - name: bloques
+    label: "Pasos que se repiten"
+    files:
+      - name: bloques
+        label: "Lista de pasos que se repiten"
+        file: "datos/bloques.json"
+        fields:
+          - label: "Pasos que se repiten"
+            name: bloques
+            widget: list
+            label_singular: "paso que se repite"
+            summary: "{{fields.titulo}}"
+            collapsed: true
+            hint: "Se escriben una sola vez y se usan en varios procesos. Para un dato que cambia use {nombre}."
+            fields:
+              - { label: "Título", name: titulo, widget: string }
+              - { label: "Texto", name: texto, widget: text }
+              - { label: "Captura de pantalla (opcional)", name: imagen, widget: image, required: false }
+              - { label: "Código (no cambiar)", name: id, widget: string, hint: "Uso interno. Sin espacios ni tildes. No lo modifique en pasos que ya existen." }
