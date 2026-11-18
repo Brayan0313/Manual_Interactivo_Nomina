@@ -132,6 +132,13 @@ const guardarBorrador = () => { try { localStorage.setItem(LLAVE, JSON.stringify
 const borrarBorrador = () => { try { localStorage.removeItem(LLAVE); } catch {} };
 const hayCambios = () => JSON.stringify(D) !== JSON.stringify(PUB);
 
+/* Imágenes nuevas del borrador (aún no publicadas): ruta -> datos de la imagen */
+const LLAVE_IMG = "manual-imagenes-v1";
+let IMGS = {}; try { IMGS = JSON.parse(localStorage.getItem(LLAVE_IMG)) || {}; } catch {}
+const guardarImgs = () => { try { localStorage.setItem(LLAVE_IMG, JSON.stringify(IMGS)); return true; } catch { return false; } };
+const srcImg = (r, previa) => (IMGS[r] && (previa || verBorrador)) ? IMGS[r] : r;
+const rutasUsadas = d => [...d.bloques.map(b => b.imagen), ...d.procesos.flatMap(p => p.pasos.map(s => s.imagen))].filter(Boolean);
+
 /* ================= LECTOR ================= */
 function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
@@ -143,7 +150,7 @@ function pintarPaso(paso) {
   } else {
     titulo = rellenar(paso.titulo, paso.params); texto = rellenar(paso.texto, paso.params); imagen = paso.imagen || "";
   }
-  const media = imagen ? `<img class="imagen" src="${limpiar(imagen)}" alt="Captura del paso">` : "";
+  const media = imagen ? `<img class="imagen" src="${limpiar(srcImg(imagen))}" alt="Captura del paso">` : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
 function verMenu() {
@@ -284,6 +291,25 @@ function descargar(nombre, objeto) {
   a.download = nombre; document.body.append(a); a.click(); a.remove();
 }
 
+function descargarBlob(nombre, blob) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre;
+  document.body.append(a); a.click(); a.remove();
+}
+const imagenesNuevas = () => [...new Set(rutasUsadas(D))].filter(r => IMGS[r]);
+function reducirImagen(file) {   // reduce a 1400 px de ancho y la comprime para que pese poco
+  return new Promise((ok, mal) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1400 / im.width), c = document.createElement("canvas");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u); ok(c.toDataURL("image/webp", 0.9));
+    };
+    im.onerror = () => mal(new Error("No se pudo leer ese archivo como imagen."));
+    im.src = u;
+  });
+}
+
 function pintarEditor() {
   const cuerpo = h("div", {});
   const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["seguridad", "Clave de administrador"]]
@@ -314,14 +340,15 @@ function actualizarBarra() {
     h("button", { class: "b", onclick: () => { const v = validar(D); mensajes = v.errores.length ? { err: { titulo: "Hay errores que corregir:", lista: v.errores }, av: v.avisos } : { ok: "No se encontraron errores.", av: v.avisos }; pintarEditor(); } }, "Revisar errores"),
     h("button", { class: "b", onclick: () => { verBorrador = true; location.hash = ""; navegar(); } }, "Ver cómo queda"),
     h("button", { class: "b pri", disabled: !cambios, onclick: publicar }, "Descargar archivos"),
-    h("button", { class: "b pel", disabled: !cambios, onclick: () => { if (confirm("¿Descartar todo el borrador y volver a lo publicado?")) { D = clonar(PUB); borrarBorrador(); selProceso = selBloque = null; mensajes = { ok: "Borrador descartado." }; pintarEditor(); } } }, "Descartar borrador"));
+    h("button", { class: "b pel", disabled: !cambios, onclick: () => { if (confirm("¿Descartar todo el borrador y volver a lo publicado?")) { D = clonar(PUB); borrarBorrador(); IMGS = {}; try { localStorage.removeItem(LLAVE_IMG); } catch {} selProceso = selBloque = null; mensajes = { ok: "Borrador descartado." }; pintarEditor(); } } }, "Descartar borrador"));
 }
 function publicar() {
   const v = validar(D);
   if (v.errores.length) { mensajes = { err: { titulo: "No se puede publicar todavía. Corrige esto:", lista: v.errores }, av: v.avisos }; pintarEditor(); return; }
   descargar("bloques.json", { bloques: D.bloques });
   setTimeout(() => descargar("procesos.json", { procesos: D.procesos }), 400);
-  pestana = "ayuda"; mensajes = { ok: "Se descargaron bloques.json y procesos.json. Ahora súbelos a la carpeta datos/ (pasos abajo).", av: v.avisos }; pintarEditor();
+  imagenesNuevas().forEach((r, i) => setTimeout(async () => descargarBlob(r.split("/").pop(), await (await fetch(IMGS[r])).blob()), 900 + i * 500));
+  pestana = "ayuda"; const nImg = imagenesNuevas().length; mensajes = { ok: "Se descargaron bloques.json y procesos.json" + (nImg ? ` y ${nImg} imagen(es) nueva(s)` : "") + ". Ahora súbelos a GitHub (pasos abajo). Si el navegador pregunta por permitir varias descargas, acepta.", av: v.avisos }; pintarEditor();
 }
 function vistaAyuda(el) {
   el.append(h("div", { class: "tarjeta" },
@@ -331,7 +358,7 @@ function vistaAyuda(el) {
       h("li", {}, "Pulsa ", h("strong", {}, "Ver cómo queda"), " para comprobar el manual con tus cambios."),
       h("li", {}, "Pulsa ", h("strong", {}, "Descargar archivos"), ": se bajan ", h("code", {}, "bloques.json"), " y ", h("code", {}, "procesos.json"), "."),
       h("li", {}, "En el repositorio, entra a la carpeta ", h("code", {}, "datos"), ", elige ", h("strong", {}, "Add file → Upload files"), ", sube los dos archivos (reemplazan a los anteriores) y confirma con ", h("strong", {}, "Commit changes"), "."),
-      h("li", {}, "Si agregaste imágenes nuevas, súbelas a la carpeta ", h("code", {}, "img"), " con el mismo nombre que escribiste en el paso."),
+      h("li", {}, "Si agregaste imágenes, también se descargaron. Entra a la carpeta ", h("code", {}, "img"), " del repositorio (importante: entra primero a la carpeta), elige ", h("strong", {}, "Add file → Upload files"), " y sube esas imágenes sin cambiarles el nombre."),
       h("li", {}, "Espera 1 o 2 minutos y recarga el manual: los cambios ya los ve todo el mundo.")),
     h("p", { class: "nota" }, "Tu borrador se guarda solo en este navegador de este computador. Si cambias de computador antes de publicar, no estará. Una vez publicado, pulsa Descartar borrador o recarga para trabajar sobre lo nuevo.")));
 }
@@ -356,9 +383,28 @@ function vistaSeguridad(el) {
 
 /* ----- imagen: ruta escrita (las imágenes se suben a la carpeta img del repositorio) ----- */
 function controlImagen(obj) {
-  return h("div", {}, h("label", {}, "Imagen (opcional)"),
-    h("input", { value: obj.imagen || "", placeholder: "Ejemplo: img/paso-sipec.png", oninput: e => { const v = e.target.value.trim(); if (v) obj.imagen = v; else delete obj.imagen; marcarSucio(); } }),
-    h("p", { class: "nota" }, "Escribe la ruta de la imagen. Primero súbela a la carpeta ", h("code", {}, "img"), " del repositorio (ver pestaña Cómo publicar)."));
+  const caja = h("div", {});
+  const dibujar = () => {
+    const arch = h("input", { type: "file", accept: "image/*", onchange: async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        const d = await reducirImagen(f), ext = d.startsWith("data:image/webp") ? "webp" : "png";
+        const base = f.name.replace(/\.[^.]+$/, "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "captura";
+        const ruta = `img/${base}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        IMGS[ruta] = d;
+        if (!guardarImgs()) { delete IMGS[ruta]; alert("No hay más espacio en el navegador para imágenes sin publicar. Publica (descarga y sube) las que ya agregaste y vuelve a intentar."); return; }
+        obj.imagen = ruta; marcarSucio(); dibujar();
+      } catch (err) { alert(err.message); }
+    } });
+    caja.replaceChildren(...[h("label", {}, "Imagen (opcional)"),
+      obj.imagen ? h("img", { src: srcImg(obj.imagen, true), alt: "Vista previa", style: "max-width:260px;max-height:160px;border-radius:6px;border:1px solid var(--linea);display:block;margin:6px 0" }) : null,
+      obj.imagen && IMGS[obj.imagen] ? h("p", { class: "nota" }, "Imagen nueva: se descargará al publicar.") : null,
+      h("div", { class: "fila" }, h("div", { class: "crece" }, arch),
+        obj.imagen ? h("button", { class: "b mini pel", onclick: () => { delete obj.imagen; marcarSucio(); dibujar(); } }, "Quitar imagen") : null),
+      h("label", {}, "O escribe la ruta de una imagen que ya esté en el repositorio"),
+      h("input", { value: obj.imagen && !IMGS[obj.imagen] ? obj.imagen : "", placeholder: "img/paso-sipec.png", onchange: e => { const v = e.target.value.trim(); if (v) obj.imagen = v; else delete obj.imagen; marcarSucio(); dibujar(); } })].filter(Boolean));
+  };
+  dibujar(); return caja;
 }
 
 /* ----- PROCESOS ----- */
@@ -495,6 +541,7 @@ const cargar = url => fetch(url, { cache: "no-store" }).then(r => { if (!r.ok) t
 Promise.all([cargar("datos/bloques.json"), cargar("datos/procesos.json"), cargar("datos/admin.json").catch(() => null)])
   .then(([b, p, a]) => {
     ADMIN = a;
+    { const usadas = new Set(rutasUsadas({ bloques: b.bloques, procesos: p.procesos })); let t = false; Object.keys(IMGS).forEach(r => { if (usadas.has(r)) { delete IMGS[r]; t = true; } }); if (t) guardarImgs(); }
     PUB = { bloques: b.bloques, procesos: p.procesos };
     const guardado = leerBorrador();
     D = guardado && guardado.bloques && guardado.procesos ? guardado : clonar(PUB);
