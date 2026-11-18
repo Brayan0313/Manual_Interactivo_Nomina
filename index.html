@@ -149,8 +149,7 @@ function pintarPaso(paso) {
 function verMenu() {
   app.innerHTML = `<h1>Manual de nómina</h1><p class="sub">¿De qué proceso quieres saber?</p>
     <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra" aria-label="Buscar">
-    <div class="lista" id="lista"></div>
-    <div class="pie"><button id="irEditor">Modo editor</button></div>`;
+    <div class="lista" id="lista"></div>`;
   const lista = document.getElementById("lista"), buscador = document.getElementById("buscador");
   function filtrar() {
     const q = buscador.value.toLowerCase();
@@ -161,7 +160,6 @@ function verMenu() {
   }
   buscador.addEventListener("input", filtrar);
   lista.addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) location.hash = b.dataset.id; });
-  document.getElementById("irEditor").onclick = () => { location.hash = "editor"; };
   filtrar();
 }
 function verProceso(p) {
@@ -182,7 +180,7 @@ function poner(banner) {
 }
 function navegar() {
   const id = decodeURIComponent(location.hash.slice(1));
-  if (id === "editor") { poner(null); return pintarEditor(); }
+  if (id === "admin" || id === "editor") { poner(null); return acceso(); }
   app.className = ""; derivar(verBorrador ? D : PUB);
   if (verBorrador) {
     const b = document.createElement("div"); b.id = "banner"; b.className = "banner";
@@ -191,6 +189,39 @@ function navegar() {
   } else poner(null);
   const p = PROCESOS.find(x => x.id === id);
   p ? verProceso(p) : verMenu();
+}
+
+/* ================= ACCESO DE ADMINISTRADOR ================= */
+let ADMIN = null;            // {sal, hash} leído de datos/admin.json
+let ADM_OK = false;          // true mientras el administrador esté dentro
+try { ADM_OK = sessionStorage.getItem("adm") === "1"; } catch {}
+const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+async function derivarClave(clave, sal) {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveBits"]);
+  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", salt: new TextEncoder().encode(sal), iterations: 200000, hash: "SHA-256" }, k, 256));
+}
+function fijarAdmin(v) { ADM_OK = v; try { v ? sessionStorage.setItem("adm", "1") : sessionStorage.removeItem("adm"); } catch {} }
+function acceso() {
+  if (ADM_OK) return pintarEditor();
+  app.className = "";
+  app.innerHTML = `<h1>Acceso de administrador</h1>
+    <p class="sub">Esta zona es solo para quienes administran el manual.</p>
+    <input id="clave" type="password" placeholder="Clave de administrador" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:12px 14px;font:inherit;color:inherit;background:var(--tarjeta);border:1.5px solid var(--linea);border-radius:10px;margin-bottom:10px">
+    <p id="msg" style="color:var(--rojo);min-height:1.5em;margin:0 0 8px"></p>
+    <button class="proceso" id="entrar" style="text-align:center;font-weight:700;max-width:220px">Entrar</button>
+    <p><button class="volver" id="atras">‹ Volver al manual</button></p>`;
+  const msg = document.getElementById("msg"), campo = document.getElementById("clave");
+  document.getElementById("atras").onclick = () => { location.hash = ""; };
+  async function entrar() {
+    if (!ADMIN) { msg.textContent = "No hay clave de administrador configurada (falta datos/admin.json)."; return; }
+    msg.textContent = "Verificando…";
+    let ok = false; try { ok = (await derivarClave(campo.value, ADMIN.sal)) === ADMIN.hash; } catch { msg.textContent = "Este navegador no permite verificar la clave (se necesita https)."; return; }
+    if (ok) { fijarAdmin(true); pintarEditor(); }
+    else { await new Promise(r => setTimeout(r, 1200)); msg.textContent = "Clave incorrecta."; campo.select(); }
+  }
+  document.getElementById("entrar").onclick = entrar;
+  campo.addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
+  campo.focus();
 }
 
 /* ================= EDITOR ================= */
@@ -255,16 +286,16 @@ function descargar(nombre, objeto) {
 
 function pintarEditor() {
   const cuerpo = h("div", {});
-  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"]]
+  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["seguridad", "Clave de administrador"]]
     .map(([k, t]) => h("button", { class: pestana === k ? "activa" : "", onclick: () => { pestana = k; mensajes = {}; pintarEditor(); } }, t)));
   app.className = "ed";
   app.replaceChildren(
     h("div", { class: "fila", style: "margin-bottom:10px" },
-      h("button", { class: "b", onclick: () => { app.className = ""; location.hash = ""; } }, "‹ Salir del modo editor"),
+      h("button", { class: "b", onclick: () => { fijarAdmin(false); app.className = ""; location.hash = ""; } }, "Cerrar sesión de administrador"),
       h("h2", { class: "crece", style: "margin:0" }, "Modo editor")),
     tabs, cuerpo, h("div", { class: "barra", id: "barra" }));
   cuerpo.append(...cajas());
-  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda })[pestana](cuerpo);
+  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad })[pestana](cuerpo);
   actualizarBarra();
   window.scrollTo(0, 0);
 }
@@ -303,6 +334,24 @@ function vistaAyuda(el) {
       h("li", {}, "Si agregaste imágenes nuevas, súbelas a la carpeta ", h("code", {}, "img"), " con el mismo nombre que escribiste en el paso."),
       h("li", {}, "Espera 1 o 2 minutos y recarga el manual: los cambios ya los ve todo el mundo.")),
     h("p", { class: "nota" }, "Tu borrador se guarda solo en este navegador de este computador. Si cambias de computador antes de publicar, no estará. Una vez publicado, pulsa Descartar borrador o recarga para trabajar sobre lo nuevo.")));
+}
+
+function vistaSeguridad(el) {
+  const n1 = h("input", { type: "password", autocomplete: "new-password" }), n2 = h("input", { type: "password", autocomplete: "new-password" }), aviso = h("div");
+  el.append(h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "Cambiar la clave de administrador"),
+    h("p", { class: "nota" }, "Usa una frase larga (mínimo 12 caracteres) que no uses en otros sitios. La clave nunca se guarda tal cual: solo se publica una huella que no se puede revertir fácilmente."),
+    aviso, h("label", {}, "Clave nueva"), n1, h("label", {}, "Repite la clave nueva"), n2,
+    h("p", {}, h("button", { class: "b pri", onclick: async () => {
+      if (n1.value.length < 12) return aviso.replaceChildren(h("div", { class: "caja-err" }, "La clave debe tener al menos 12 caracteres."));
+      if (n1.value !== n2.value) return aviso.replaceChildren(h("div", { class: "caja-err" }, "Las claves no coinciden."));
+      const sal = hex(crypto.getRandomValues(new Uint8Array(16)));
+      descargar("admin.json", { sal, hash: await derivarClave(n1.value, sal) });
+      aviso.replaceChildren(h("div", { class: "caja-ok" }, "Se descargó admin.json. Súbelo a la carpeta datos/ del repositorio (reemplaza al anterior). La clave nueva funciona cuando termine de publicarse."));
+    } }, "Generar archivo con la clave nueva"))),
+    h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "Qué protege y qué no"),
+      h("ul", {}, h("li", {}, "Los lectores no ven ningún enlace al editor, y para entrar se necesita la clave."),
+        h("li", {}, "Pero esta clave solo cierra la puerta de la pantalla de edición. ", h("strong", {}, "Lo que realmente impide que alguien cambie el manual es no tener permiso de escritura en el repositorio"), ": sin eso, nadie puede publicar nada."),
+        h("li", {}, "Por eso: da permiso de escritura en el repositorio únicamente a los administradores."))));
 }
 
 /* ----- imagen: ruta escrita (las imágenes se suben a la carpeta img del repositorio) ----- */
@@ -443,8 +492,9 @@ function editorBloque(el, b) {
 
 /* ================= ARRANQUE ================= */
 const cargar = url => fetch(url, { cache: "no-store" }).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
-Promise.all([cargar("datos/bloques.json"), cargar("datos/procesos.json")])
-  .then(([b, p]) => {
+Promise.all([cargar("datos/bloques.json"), cargar("datos/procesos.json"), cargar("datos/admin.json").catch(() => null)])
+  .then(([b, p, a]) => {
+    ADMIN = a;
     PUB = { bloques: b.bloques, procesos: p.procesos };
     const guardado = leerBorrador();
     D = guardado && guardado.bloques && guardado.procesos ? guardado : clonar(PUB);
