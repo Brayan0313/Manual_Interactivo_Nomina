@@ -249,6 +249,23 @@ function h(tag, attrs = {}, ...hijos) {
 const paramsDe = b => [...new Set(((b?.titulo || "") + " " + (b?.texto || "")).match(/\{(\w+)\}/g)?.map(x => x.slice(1, -1)) || [])];
 const usosBloque = id => D.procesos.reduce((n, p) => n + p.pasos.filter(s => s.bloque === id).length, 0);
 const ID_OK = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+/* Identificadores AUTOMÁTICOS: se generan desde el nombre (Horas extras -> horas_extras). Nadie los escribe. */
+const slugId = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\{\w+\}/g, "")
+  .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 50).replace(/_+$/g, "") || "sin_nombre";
+function idUnico(base, usados) { let id = base, n = 2; while (usados.has(id)) id = base + "_" + n++; return id; }
+/* Mientras un proceso/bloque NO esté publicado, su identificador sigue al nombre. Una vez publicado ya no cambia (para no romper enlaces). */
+function autoIdProceso(p) {
+  if (PUB.procesos.some(x => x.id === p.id)) return;
+  const nuevo = idUnico(slugId(p.nombre), new Set(D.procesos.filter(x => x !== p).map(x => x.id)));
+  if (nuevo === p.id) return;
+  D.procesos.forEach(x => { if (x.padre === p.id) x.padre = nuevo; }); p.id = nuevo; selProceso = nuevo;
+}
+function autoIdBloque(b) {
+  if (PUB.bloques.some(x => x.id === b.id)) return;
+  const nuevo = idUnico(slugId(b.titulo), new Set(D.bloques.filter(x => x !== b).map(x => x.id)));
+  if (nuevo === b.id) return;
+  D.procesos.forEach(p => p.pasos.forEach(st => { if (st.bloque === b.id) st.bloque = nuevo; })); b.id = nuevo; selBloque = nuevo;
+}
 function marcarSucio() { guardarBorrador(); actualizarBarra(); }
 function mover(lista, i, d) { const j = i + d; if (j < 0 || j >= lista.length) return; [lista[i], lista[j]] = [lista[j], lista[i]]; marcarSucio(); }
 
@@ -369,6 +386,39 @@ async function publicarEnGithub() {
   } catch (e) { mensajes = { err: { titulo: "No se pudo publicar: " + textoErrorGh(e), lista: [] } }; }
   pintarEditor();
 }
+function vistaHerramientas(el) {
+  /* 1) Reparar enlaces rotos: pasos que usan un bloque que no existe */
+  const rotos = [...new Set(D.procesos.flatMap(p => p.pasos.filter(st => "bloque" in st && !D.bloques.some(b => b.id === st.bloque)).map(st => st.bloque)))];
+  const cuantos = id => D.procesos.reduce((n, p) => n + p.pasos.filter(st => "bloque" in st && st.bloque === id).length, 0);
+  const caja1 = h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "1. Reparar pasos que usan un bloque que no existe"));
+  if (!rotos.length) caja1.append(h("p", { class: "nota" }, "✓ Todos los pasos comunes apuntan a un bloque que existe."));
+  rotos.forEach(r => {
+    const sel = h("select", {}, h("option", { value: "" }, "(elige el bloque correcto)"), D.bloques.map(b => h("option", { value: b.id }, b.titulo)));
+    caja1.append(h("label", {}, r ? "Pasos que usan «" + r + "» (" + cuantos(r) + ")" : "Pasos comunes sin bloque elegido (" + cuantos(r) + ")"), sel,
+      h("p", {}, h("button", { class: "b mini pri", onclick: () => {
+        if (!sel.value) return alert("Primero elige el bloque correcto en la lista.");
+        D.procesos.forEach(p => p.pasos.forEach(st => { if ("bloque" in st && st.bloque === r) st.bloque = sel.value; }));
+        marcarSucio(); mensajes = { ok: "Listo: esos pasos ahora usan el bloque elegido." }; pintarEditor();
+      } }, "Aplicar a todos esos pasos")));
+  });
+  /* 2) Estandarizar todos los identificadores */
+  const caja2 = h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "2. Estandarizar los identificadores existentes"),
+    h("p", { class: "nota" }, "Convierte todos los identificadores al formato automático (por ejemplo «Horas extras masivo» → ", h("code", {}, "horas_extras_masivo"), "). Los pasos y subprocesos se actualizan solos. Hazlo después de reparar los enlaces rotos (paso 1). Como es un cambio de borrador, puedes descartarlo antes de publicar. Los enlaces guardados a procesos con el nombre antiguo dejarán de funcionar."),
+    h("button", { class: "b", onclick: () => {
+      if (rotos.length && !confirm("Todavía hay pasos con bloques inexistentes (paso 1). Esos no se podrán actualizar solos. ¿Continuar de todos modos?")) return;
+      const mapB = {}, mapP = {}; let usados = new Set();
+      D.bloques.forEach(b => { const n = idUnico(slugId(b.titulo), usados); usados.add(n); mapB[b.id] = n; });
+      usados = new Set(); D.procesos.forEach(p => { const n = idUnico(slugId(p.nombre), usados); usados.add(n); mapP[p.id] = n; });
+      const cambios = Object.keys(mapB).filter(k => mapB[k] !== k).length + Object.keys(mapP).filter(k => mapP[k] !== k).length;
+      if (!cambios) { mensajes = { ok: "Los identificadores ya están estandarizados." }; return pintarEditor(); }
+      if (!confirm("Se cambiarán " + cambios + " identificadores. ¿Continuar?")) return;
+      D.procesos.forEach(p => { if (p.padre && mapP[p.padre]) p.padre = mapP[p.padre]; p.pasos.forEach(st => { if (st.bloque && mapB[st.bloque]) st.bloque = mapB[st.bloque]; }); });
+      D.procesos.forEach(p => { p.id = mapP[p.id]; }); D.bloques.forEach(b => { b.id = mapB[b.id]; });
+      selProceso = selBloque = null; marcarSucio(); mensajes = { ok: cambios + " identificadores estandarizados." }; pintarEditor();
+    } }, "Estandarizar identificadores"));
+  el.append(caja1, caja2);
+}
+
 function vistaPublicacion(el) {
   const c = cfgRepo();
   const dueno = h("input", { value: c.owner }), repo = h("input", { value: c.repo }), rama = h("input", { value: c.branch, placeholder: "(automática)" });
@@ -400,7 +450,7 @@ function vistaPublicacion(el) {
 
 function pintarEditor() {
   const cuerpo = h("div", {});
-  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["publicacion", "Publicación"], ["seguridad", "Clave de administrador"]]
+  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["herramientas", "Herramientas"], ["publicacion", "Publicación"], ["seguridad", "Clave de administrador"]]
     .map(([k, t]) => h("button", { class: pestana === k ? "activa" : "", onclick: () => { pestana = k; mensajes = {}; pintarEditor(); } }, t)));
   app.className = "ed";
   app.replaceChildren(
@@ -409,7 +459,7 @@ function pintarEditor() {
       h("h2", { class: "crece", style: "margin:0" }, "Modo editor")),
     tabs, cuerpo, h("div", { class: "barra", id: "barra" }));
   cuerpo.append(...cajas());
-  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad, publicacion: vistaPublicacion })[pestana](cuerpo);
+  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad, publicacion: vistaPublicacion, herramientas: vistaHerramientas })[pestana](cuerpo);
   actualizarBarra();
   window.scrollTo(0, 0);
 }
@@ -501,8 +551,8 @@ function vistaProcesos(el) {
   if (selProceso) { const p = D.procesos.find(x => x.id === selProceso); if (p) return editorProceso(el, p); selProceso = null; }
   el.append(h("div", { class: "fila", style: "margin-bottom:12px" }, h("h3", { class: "crece", style: "margin:0" }, "Procesos"),
     h("button", { class: "b pri", onclick: () => {
-      let n = 1; while (D.procesos.some(p => p.id === "nuevo-proceso-" + n)) n++;
-      D.procesos.push({ id: "nuevo-proceso-" + n, nombre: "Nuevo proceso", resumen: "", pasos: [] }); selProceso = "nuevo-proceso-" + n; marcarSucio(); pintarEditor();
+      const id = idUnico("nuevo_proceso", new Set(D.procesos.map(p => p.id)));
+      D.procesos.push({ id, nombre: "Nuevo proceso", resumen: "", pasos: [] }); selProceso = id; marcarSucio(); pintarEditor();
     } }, "+ Nuevo proceso")));
   const filas = [];
   D.procesos.filter(p => !p.padre).forEach(p => { filas.push(p); D.procesos.filter(x => x.padre === p.id).forEach(x => filas.push(x)); });
@@ -520,20 +570,13 @@ function editorProceso(el, p) {
   el.append(h("button", { class: "b", onclick: () => { selProceso = null; pintarEditor(); } }, "‹ Volver a la lista"));
   const opcionesPadre = D.procesos.filter(x => x !== p && !x.padre && !hijos.includes(x));
   el.append(h("div", { class: "tarjeta", style: "margin-top:12px" },
-    h("label", {}, "Nombre del proceso"), h("input", { value: p.nombre, oninput: e => { p.nombre = e.target.value; marcarSucio(); } }),
+    h("label", {}, "Nombre del proceso"), h("input", { value: p.nombre, oninput: e => { p.nombre = e.target.value; autoIdProceso(p); const c = document.getElementById("idint"); if (c) c.textContent = p.id; marcarSucio(); } }),
     h("label", {}, "Resumen (se ve en el menú)"), h("input", { value: p.resumen || "", oninput: e => { p.resumen = e.target.value; marcarSucio(); } }),
     h("label", {}, "¿Es subproceso de otro proceso?"),
     h("select", { value: p.padre || "", onchange: e => { if (e.target.value) p.padre = e.target.value; else delete p.padre; marcarSucio(); } },
       h("option", { value: "" }, "No, es un proceso principal"), opcionesPadre.map(x => h("option", { value: x.id }, "Sí, de: " + x.nombre))),
     hijos.length ? h("p", { class: "nota" }, "Tiene subprocesos, por eso no puede ser subproceso de otro.") : null,
-    h("label", {}, "Identificador (parte de la dirección del proceso)"),
-    h("input", { value: p.id, onchange: e => {
-      const n = e.target.value.trim();
-      if (!ID_OK.test(n)) { alert("Usa solo letras sin tildes ni espacios, números, guiones o guion bajo."); e.target.value = p.id; return; }
-      if (D.procesos.some(x => x !== p && x.id === n)) { alert("Ya existe un proceso con ese identificador."); e.target.value = p.id; return; }
-      D.procesos.forEach(x => { if (x.padre === p.id) x.padre = n; }); p.id = n; selProceso = n; marcarSucio();
-    } }),
-    h("p", { class: "nota" }, "Si lo cambias, los enlaces antiguos a este proceso dejan de funcionar.")));
+    h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, p.id))));
   el.append(h("h3", {}, "Pasos"));
   p.pasos.forEach((s, i) => el.append(tarjetaPaso(p, s, i)));
   el.append(h("div", { class: "fila" },
@@ -591,8 +634,8 @@ function vistaBloques(el) {
   if (selBloque) { const b = D.bloques.find(x => x.id === selBloque); if (b) return editorBloque(el, b); selBloque = null; }
   el.append(h("div", { class: "fila", style: "margin-bottom:6px" }, h("h3", { class: "crece", style: "margin:0" }, "Pasos comunes (bloques)"),
     h("button", { class: "b pri", onclick: () => {
-      let n = 1; while (D.bloques.some(b => b.id === "nuevo-bloque-" + n)) n++;
-      D.bloques.push({ id: "nuevo-bloque-" + n, titulo: "Nuevo paso común", texto: "" }); selBloque = "nuevo-bloque-" + n; marcarSucio(); pintarEditor();
+      const id = idUnico("nuevo_paso_comun", new Set(D.bloques.map(b => b.id)));
+      D.bloques.push({ id, titulo: "Nuevo paso común", texto: "" }); selBloque = id; marcarSucio(); pintarEditor();
     } }, "+ Nuevo bloque")),
     h("p", { class: "nota" }, "Un bloque es un paso que se repite en varios procesos. Si lo cambias aquí, cambia en todos los que lo usan."));
   D.bloques.forEach((b, i) => el.append(h("div", { class: "item" },
@@ -605,17 +648,10 @@ function editorBloque(el, b) {
   const ta = h("textarea", { oninput: e => { b.texto = e.target.value; marcarSucio(); } }); ta.value = b.texto || "";
   el.append(h("button", { class: "b", onclick: () => { selBloque = null; pintarEditor(); } }, "‹ Volver a la lista"),
     h("div", { class: "tarjeta", style: "margin-top:12px" },
-      h("label", {}, "Título del paso"), h("input", { value: b.titulo, oninput: e => { b.titulo = e.target.value; marcarSucio(); } }),
+      h("label", {}, "Título del paso"), h("input", { value: b.titulo, oninput: e => { b.titulo = e.target.value; autoIdBloque(b); const c = document.getElementById("idint"); if (c) c.textContent = b.id; marcarSucio(); } }),
       h("label", {}, "Instrucciones"), ta,
       h("p", { class: "nota" }, "Para valores que cambian en cada proceso escribe el nombre entre llaves, por ejemplo ", h("code", {}, "{archivo}"), ". Cada proceso que use el bloque indicará el valor."),
-      controlImagen(b), h("label", {}, "Identificador"),
-      h("input", { value: b.id, onchange: e => {
-        const n = e.target.value.trim();
-        if (!ID_OK.test(n)) { alert("Usa solo letras sin tildes ni espacios, números, guiones o guion bajo."); e.target.value = b.id; return; }
-        if (D.bloques.some(x => x !== b && x.id === n)) { alert("Ya existe un bloque con ese identificador."); e.target.value = b.id; return; }
-        D.procesos.forEach(p => p.pasos.forEach(s => { if (s.bloque === b.id) s.bloque = n; })); b.id = n; selBloque = n; marcarSucio();
-      } }),
-      h("p", { class: "nota" }, "Si lo cambias, se actualizan solos los procesos que lo usan.")),
+      controlImagen(b), h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, b.id))),
     h("h3", {}, "Procesos que usan este bloque"), usos.length ? h("ul", {}, usos.map(p => h("li", {}, p.nombre))) : h("p", { class: "nota" }, "Ninguno todavía."),
     h("hr", { style: "margin:26px 0 14px;border:0;border-top:1px solid var(--linea)" }),
     h("button", { class: "b pel", onclick: () => {
