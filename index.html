@@ -310,9 +310,97 @@ function reducirImagen(file) {   // reduce a 1400 px de ancho y la comprime para
   });
 }
 
+/* ================= PUBLICACIÓN DIRECTA EN GITHUB ================= */
+const LLAVE_CFG = "manual-pub-cfg-v1";
+function cfgRepo() {
+  let c = {}; try { c = JSON.parse(localStorage.getItem(LLAVE_CFG)) || {}; } catch {}
+  const auto = location.hostname.endsWith(".github.io") ? { owner: location.hostname.split(".")[0], repo: location.pathname.split("/")[1] || "" } : {};
+  return { owner: c.owner || auto.owner || "", repo: c.repo || auto.repo || "", branch: c.branch || "" };
+}
+const guardarCfg = c => { try { localStorage.setItem(LLAVE_CFG, JSON.stringify(c)); } catch {} };
+let TOKEN = ""; try { TOKEN = sessionStorage.getItem("manual-tk") || localStorage.getItem("manual-tk-r") || ""; } catch {}
+function fijarToken(t, recordar) {
+  TOKEN = t;
+  try { sessionStorage.setItem("manual-tk", t); recordar ? localStorage.setItem("manual-tk-r", t) : localStorage.removeItem("manual-tk-r"); } catch {}
+}
+function quitarToken() { TOKEN = ""; try { sessionStorage.removeItem("manual-tk"); localStorage.removeItem("manual-tk-r"); } catch {} }
+async function gh(ruta, { metodo = "GET", cuerpo } = {}) {
+  const c = cfgRepo();
+  const r = await fetch("https://api.github.com/repos/" + c.owner + "/" + c.repo + ruta, {
+    method: metodo, headers: { Authorization: "Bearer " + TOKEN, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.message || ("Error " + r.status)); e.codigo = r.status; throw e; }
+  return d;
+}
+const aBase64 = t => { let x = ""; new TextEncoder().encode(t).forEach(c => x += String.fromCharCode(c)); return btoa(x); };
+const deBase64 = b => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g, "")), c => c.charCodeAt(0)));
+const canon = o => JSON.stringify(o, (k, v) => v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v);
+function textoErrorGh(e) {
+  if (e.codigo === 401) return "El token no es válido o ya venció. Genera uno nuevo en GitHub y pégalo en la pestaña Publicación.";
+  if (e.codigo === 403 || e.codigo === 404) return "GitHub no permite esa acción. Revisa que el token tenga el permiso «Contents: Read and write» sobre este repositorio y que el nombre del propietario y del repositorio estén bien escritos.";
+  if (e instanceof TypeError) return "No se pudo conectar con GitHub (revisa tu conexión a internet o si la red de la empresa bloquea api.github.com).";
+  return e.message;
+}
+async function publicarEnGithub() {
+  const c = cfgRepo(), v = validar(D);
+  if (v.errores.length) { mensajes = { err: { titulo: "No se puede publicar todavía. Corrige esto:", lista: v.errores }, av: v.avisos }; return pintarEditor(); }
+  if (!TOKEN || !c.owner || !c.repo) { pestana = "publicacion"; mensajes = { err: { titulo: "Antes de publicar, configura la conexión con GitHub (una sola vez).", lista: [] } }; return pintarEditor(); }
+  if (!confirm("¿Publicar los cambios? Todos los lectores los verán en 1 o 2 minutos.")) return;
+  mensajes = { ok: "Publicando… no cierres esta página." }; pintarEditor();
+  try {
+    const rep = await gh(""), rama = c.branch || rep.default_branch;
+    const base = (await gh("/git/ref/heads/" + rama)).object.sha, commitBase = await gh("/git/commits/" + base);
+    // Si alguien publicó algo distinto mientras editabas, no lo pisamos
+    for (const [ruta, mio, clave] of [["datos/bloques.json", PUB.bloques, "bloques"], ["datos/procesos.json", PUB.procesos, "procesos"]]) {
+      const f = await gh("/contents/" + ruta + "?ref=" + rama);
+      if (canon(JSON.parse(deBase64(f.content))[clave]) !== canon(mio))
+        throw Object.assign(new Error("Otra persona publicó cambios mientras editabas, y para no pisarlos no se publicó nada. Tu borrador sigue guardado. Avisa al responsable para revisar ambos cambios."), { codigo: "conflicto" });
+    }
+    const archivos = [["datos/bloques.json", aBase64(JSON.stringify({ bloques: D.bloques }, null, 2) + "\n")], ["datos/procesos.json", aBase64(JSON.stringify({ procesos: D.procesos }, null, 2) + "\n")]];
+    const nuevas = imagenesNuevas(); nuevas.forEach(r => archivos.push([r, IMGS[r].split(",")[1]]));
+    const arbol = [];
+    for (const [ruta, b64] of archivos) { const bl = await gh("/git/blobs", { metodo: "POST", cuerpo: { content: b64, encoding: "base64" } }); arbol.push({ path: ruta, mode: "100644", type: "blob", sha: bl.sha }); }
+    const nt = await gh("/git/trees", { metodo: "POST", cuerpo: { base_tree: commitBase.tree.sha, tree: arbol } });
+    const nc = await gh("/git/commits", { metodo: "POST", cuerpo: { message: "Actualización del manual desde el modo administrador", tree: nt.sha, parents: [base] } });
+    await gh("/git/refs/heads/" + rama, { metodo: "PATCH", cuerpo: { sha: nc.sha } });
+    PUB = clonar(D); nuevas.forEach(r => delete IMGS[r]); guardarImgs(); borrarBorrador();
+    mensajes = { ok: "¡Publicado! Los lectores verán los cambios en 1 o 2 minutos (si ves una imagen sin cargar justo ahora, espera ese tiempo).", av: v.avisos };
+  } catch (e) { mensajes = { err: { titulo: "No se pudo publicar: " + textoErrorGh(e), lista: [] } }; }
+  pintarEditor();
+}
+function vistaPublicacion(el) {
+  const c = cfgRepo();
+  const dueno = h("input", { value: c.owner }), repo = h("input", { value: c.repo }), rama = h("input", { value: c.branch, placeholder: "(automática)" });
+  const tk = h("input", { type: "password", autocomplete: "off", placeholder: TOKEN ? "Ya hay un token guardado en esta sesión" : "Pega aquí el token" });
+  const rec = h("input", { type: "checkbox", style: "width:auto" }); const res = h("div");
+  const leer = () => ({ owner: dueno.value.trim(), repo: repo.value.trim(), branch: rama.value.trim() });
+  el.append(h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "Conexión con GitHub (se configura una sola vez)"),
+    h("p", { class: "nota" }, "Con esto, el botón ", h("strong", {}, "Publicar"), " envía los cambios directo al manual, sin descargar ni subir archivos."), res,
+    h("div", { class: "fila" }, h("div", { class: "crece" }, h("label", {}, "Propietario"), dueno), h("div", { class: "crece" }, h("label", {}, "Repositorio"), repo), h("div", { class: "crece" }, h("label", {}, "Rama (opcional)"), rama)),
+    h("label", {}, "Token de acceso"), tk,
+    h("label", { style: "display:flex;gap:8px;align-items:center;font-weight:400" }, rec, "Recordar el token en este computador (solo si es tu equipo personal)"),
+    h("p", { class: "fila" },
+      h("button", { class: "b pri", onclick: async () => {
+        guardarCfg(leer()); if (tk.value.trim()) fijarToken(tk.value.trim(), rec.checked);
+        if (!TOKEN) return res.replaceChildren(h("div", { class: "caja-err" }, "Falta pegar el token."));
+        res.replaceChildren(h("p", { class: "nota" }, "Probando…"));
+        try { const r = await gh(""); res.replaceChildren(h("div", { class: r.permissions && r.permissions.push === false ? "caja-err" : "caja-ok" }, r.permissions && r.permissions.push === false ? "Conecta, pero el token NO tiene permiso de escritura." : "Conexión correcta con " + r.full_name + ". Ya puedes publicar.")); }
+        catch (e) { res.replaceChildren(h("div", { class: "caja-err" }, textoErrorGh(e))); }
+      } }, "Guardar y probar conexión"),
+      h("button", { class: "b pel", onclick: () => { quitarToken(); pintarEditor(); } }, "Olvidar el token"))),
+    h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "Cómo crear el token (una sola vez)"),
+      h("ol", {}, h("li", {}, "En GitHub, con la cuenta dueña del repositorio: tu foto → ", h("strong", {}, "Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token"), "."),
+        h("li", {}, "Ponle nombre (por ejemplo «manual») y una fecha de vencimiento (máximo 1 año)."),
+        h("li", {}, "En ", h("strong", {}, "Repository access"), " elige ", h("strong", {}, "Only select repositories"), " y marca solo este repositorio."),
+        h("li", {}, "En ", h("strong", {}, "Permissions → Repository permissions"), " pon ", h("strong", {}, "Contents: Read and write"), " (nada más)."),
+        h("li", {}, "Pulsa Generate token, copia el texto que empieza con ", h("code", {}, "github_pat_"), " y pégalo arriba.")),
+      h("p", { class: "nota" }, "El token es como una contraseña: no lo compartas ni lo pegues en el manual ni en archivos. Si crees que se filtró, bórralo en GitHub y crea otro.")));
+}
+
 function pintarEditor() {
   const cuerpo = h("div", {});
-  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["seguridad", "Clave de administrador"]]
+  const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["publicacion", "Publicación"], ["seguridad", "Clave de administrador"]]
     .map(([k, t]) => h("button", { class: pestana === k ? "activa" : "", onclick: () => { pestana = k; mensajes = {}; pintarEditor(); } }, t)));
   app.className = "ed";
   app.replaceChildren(
@@ -321,7 +409,7 @@ function pintarEditor() {
       h("h2", { class: "crece", style: "margin:0" }, "Modo editor")),
     tabs, cuerpo, h("div", { class: "barra", id: "barra" }));
   cuerpo.append(...cajas());
-  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad })[pestana](cuerpo);
+  ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad, publicacion: vistaPublicacion })[pestana](cuerpo);
   actualizarBarra();
   window.scrollTo(0, 0);
 }
@@ -339,7 +427,8 @@ function actualizarBarra() {
     h("span", { class: "estado" + (cambios ? " sucio" : "") }, cambios ? "● Borrador con cambios sin publicar" : "✓ Sin cambios"),
     h("button", { class: "b", onclick: () => { const v = validar(D); mensajes = v.errores.length ? { err: { titulo: "Hay errores que corregir:", lista: v.errores }, av: v.avisos } : { ok: "No se encontraron errores.", av: v.avisos }; pintarEditor(); } }, "Revisar errores"),
     h("button", { class: "b", onclick: () => { verBorrador = true; location.hash = ""; navegar(); } }, "Ver cómo queda"),
-    h("button", { class: "b pri", disabled: !cambios, onclick: publicar }, "Descargar archivos"),
+    h("button", { class: "b pri", disabled: !cambios, onclick: publicarEnGithub }, "Publicar"),
+    h("button", { class: "b", disabled: !cambios, onclick: publicar }, "Descargar archivos"),
     h("button", { class: "b pel", disabled: !cambios, onclick: () => { if (confirm("¿Descartar todo el borrador y volver a lo publicado?")) { D = clonar(PUB); borrarBorrador(); IMGS = {}; try { localStorage.removeItem(LLAVE_IMG); } catch {} selProceso = selBloque = null; mensajes = { ok: "Borrador descartado." }; pintarEditor(); } } }, "Descartar borrador"));
 }
 function publicar() {
@@ -352,7 +441,7 @@ function publicar() {
 }
 function vistaAyuda(el) {
   el.append(h("div", { class: "tarjeta" },
-    h("h3", { style: "margin-top:0" }, "Cómo publicar los cambios"),
+    h("h3", { style: "margin-top:0" }, "Publicar a mano (alternativa al botón Publicar)"),
     h("ol", {},
       h("li", {}, "Pulsa ", h("strong", {}, "Revisar errores"), " y corrige lo que aparezca."),
       h("li", {}, "Pulsa ", h("strong", {}, "Ver cómo queda"), " para comprobar el manual con tus cambios."),
