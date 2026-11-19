@@ -173,7 +173,8 @@
         {
           "titulo": "Filtrar colaboradores vinculados",
           "texto": "Filtrar los colaboradores vinculados de Mobility.",
-          "bloque": "depuracionBasesTrabajo"
+          "bloque": "depuracionBasesTrabajo",
+          "params": []
         },
         {
           "titulo": "Redondear valores",
@@ -183,7 +184,8 @@
           "titulo": "Calcular Permiso No Remunerado",
           "texto": "Calcular el valor correspondiente al Permiso No Remunerado (PNR).(USAR PARA EL PROCESO DE PERMISO NO REMUNERADO)",
           "imagen": "he/columnas-consolidadas.png",
-          "bloque": "determinacionPeriodoNomina"
+          "bloque": "determinacionPeriodoNomina",
+          "params": []
         },
         {
           "titulo": "Calcular Auxilio de Movilidad",
@@ -199,7 +201,8 @@
         {
           "titulo": "Aplicar redondeo",
           "texto": "Aplicar el redondeo correspondiente al PNR.",
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPE",
+          "params": []
         },
         {
           "titulo": "Aplicar redondeo",
@@ -216,12 +219,14 @@
           "titulo": "Construir la hoja PTERCERO del plano",
           "texto": "En la hoja CONSOLIDADO 2, filtrar primero por la empresa que se va a procesar.\n\nCon la empresa filtrada, procesar cada concepto de forma individual (EXCEPTO POR PNR, AUXILIO DE MOVILIDAD , debido a que esas 2 novedades tienen su propio). Para cada concepto:\n1. Aplicar el filtro sobre la columna correspondiente.\n2. Excluir los registros cuyo valor sea 0.\n3. Conservar únicamente los colaboradores con valores para ese concepto.\n4. Registrar la información resultante en la hoja PTERCERO del archivo PLANO HE.\n\nEstructura de la hoja PTERCERO:\n- Columna A: código de la empresa.\n- Columna B: año actual.\n- Columna C: periodo.\n- Columna D: cédula.\n- Columna E: concepto de novedad.\n- Columna F: fecha del periodo.\n- Columna J: cantidad de horas.\n\nNota: ocultar las columnas de conceptos que no se utilizarán (las que no tienen color en el encabezado) y conservar solo las transformadas para el cargue.\n\nPunto de control: verificar que cada concepto se filtró individualmente y que en PTERCERO no hay registros con valor 0.",
           "imagen": "info de empresas.png",
-          "bloque": "cargaPlanoSIPE"
+          "bloque": "cargaPlanoSIPE",
+          "params": []
         },
         {
           "titulo": "Generar el archivo plano",
           "texto": "1. En la hoja PTERCERO del archivo PLANO HE, identificar la cantidad total de filas que contienen información.\n2. Tomar el número de la última fila con datos y restarle 1, porque la primera fila son los encabezados. El resultado es la cantidad de registros que deben existir en las hojas PLANO y FINAL.\n3. Ir a la hoja PLANO, seleccionar la primera fila con fórmula y arrastrarla hasta completar esa cantidad de registros.\n4. Repetir el mismo procedimiento en la hoja FINAL.\n5. Guardar el archivo en formato Texto (MS-DOS) (*.txt) con el nombre HE_NOMBREEMPRESA.\n\nPunto de control: confirmar que PTERCERO, PLANO y FINAL tienen la misma cantidad de registros.",
-          "bloque": "validacionPosteriorCarga"
+          "bloque": "validacionPosteriorCarga",
+          "params": []
         },
         {
           "titulo": "Cargar el plano en SIPE",
@@ -696,18 +701,6 @@
         }
       ],
       "id": "vacaciones-sipe"
-    },
-    {
-      "id": "Inscripcion-sipe",
-      "nombre": "Inscripción a SIPE",
-      "resumen": "",
-      "pasos": [
-        {
-          "titulo": "Solicitar datos de ingreso",
-          "texto": "1. Solicitar Correo electrónico\n2. Enviar los datos a la encargada de Nómina ",
-          "imagen": "img/captura-de-pantalla-2026-08-20-081901-carp.webp"
-        }
-      ]
     }
   ]
 }
