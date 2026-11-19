@@ -701,6 +701,22 @@
         }
       ],
       "id": "vacaciones-sipe"
+    },
+    {
+      "id": "ingresos_de_empleados_vinculados_temporales_y_apre",
+      "nombre": "Ingresos de empleados, vinculados, temporales y aprendices",
+      "area": "contratacion",
+      "resumen": "Proceso de contratación y registro de personal, que incluye la gestión documental, afiliaciones y creación de registros para garantizar el inicio oportuno de sus labores.",
+      "pasos": [
+        {
+          "titulo": "Validación de información",
+          "texto": "Validar que este la información necesaria y documentos de proceso de selección. Para temporales se recibe correo del temporal confirmando contratación y envían información necesaria para ingresar al candidato a SIPE y Potencia."
+        },
+        {
+          "titulo": "Validar información",
+          "texto": "Validar que este la información necesaria y documentos de proceso de selección. Para temporales se recibe correo del temporal confirmando contratación y envían información necesaria para ingresar al candidato a SIPE y Potencia."
+        }
+      ]
     }
   ]
 }
