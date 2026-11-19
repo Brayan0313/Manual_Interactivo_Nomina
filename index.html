@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Manual de nómina</title>
+<title>Manual de procesos</title>
 <style>
   /* ===== COLORES: azul oscuro, rojo y gris ===== */
   :root {
@@ -39,6 +39,15 @@
   .proceso strong { display: block; color: var(--titulo); }
   .proceso span { color: var(--suave); font-size: .92rem; }
   .vacio { color: var(--suave); padding: 12px 2px; }
+  .areas { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 8px; }
+  .area { text-align: left; font: inherit; color: inherit; cursor: pointer; background: var(--tarjeta);
+    border: 1.5px solid var(--linea); border-top: 5px solid var(--acento); border-radius: 12px; padding: 22px 20px; }
+  .area:hover { border-top-color: var(--rojo); border-color: var(--rojo); }
+  .area strong { display: block; font-size: 1.3rem; color: var(--titulo); }
+  .area span { color: var(--suave); }
+  .btn-admin { position: fixed; top: 14px; right: 14px; z-index: 20; font: inherit; font-size: .82rem; cursor: pointer;
+    background: var(--tarjeta); color: var(--suave); border: 1.5px solid var(--linea); border-radius: 999px; padding: 5px 12px; }
+  .btn-admin:hover { color: var(--titulo); border-color: var(--acento); }
   .pie { margin-top: 36px; text-align: center; }
   .pie button { background: none; border: 0; color: var(--suave); font: inherit; font-size: .85rem; cursor: pointer; text-decoration: underline; }
 
@@ -139,6 +148,17 @@ const guardarImgs = () => { try { localStorage.setItem(LLAVE_IMG, JSON.stringify
 const srcImg = (r, previa) => (IMGS[r] && (previa || verBorrador)) ? IMGS[r] : r;
 const rutasUsadas = d => [...d.bloques.map(b => b.imagen), ...d.procesos.flatMap(p => p.pasos.map(s => s.imagen))].filter(Boolean);
 
+/* Áreas del manual. Los procesos y pasos comunes sin campo "area" se consideran de Nómina. */
+const AREAS = [{ id: "nomina", nombre: "Nómina" }, { id: "contratacion", nombre: "Contratación" }];
+const areaDe = x => x.area || "nomina";
+const nombreArea = id => (AREAS.find(a => a.id === id) || { nombre: id }).nombre;
+function crearBotonAdmin() {
+  if (document.getElementById("btnAdmin")) return;
+  const b = document.createElement("button"); b.id = "btnAdmin"; b.type = "button"; b.className = "btn-admin";
+  b.textContent = "🔒 Administrador"; b.title = "Entrar al modo administrador (pide clave)"; b.onclick = () => { location.hash = "admin"; };
+  document.body.append(b);
+}
+
 /* ================= LECTOR ================= */
 function pintarPaso(paso) {
   let titulo, texto, imagen = "", etiqueta = "";
@@ -153,17 +173,26 @@ function pintarPaso(paso) {
   const media = imagen ? `<img class="imagen" src="${limpiar(srcImg(imagen))}" alt="Captura del paso">` : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
-function verMenu() {
-  app.innerHTML = `<h1>Manual de nómina</h1><p class="sub">¿De qué proceso quieres saber?</p>
+function verAreas() {
+  app.innerHTML = `<h1>Manual de procesos</h1><p class="sub">¿De qué área es el proceso?</p>
+    <div class="areas">${AREAS.map(a => { const n = PROCESOS.filter(p => !p.padre && areaDe(p) === a.id).length;
+      return `<button class="area" data-area="${a.id}"><strong>${limpiar(a.nombre)}</strong><span>${n} ${n === 1 ? "proceso" : "procesos"}</span></button>`; }).join("")}</div>`;
+  app.querySelector(".areas").addEventListener("click", e => { const b = e.target.closest("button[data-area]"); if (b) location.hash = "/" + b.dataset.area; });
+}
+function verMenu(area) {
+  app.innerHTML = `<button class="volver" id="todas">‹ Todas las áreas</button>
+    <h1>${limpiar(area.nombre)}</h1><p class="sub">¿De qué proceso quieres saber?</p>
     <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra" aria-label="Buscar">
     <div class="lista" id="lista"></div>`;
   const lista = document.getElementById("lista"), buscador = document.getElementById("buscador");
+  document.getElementById("todas").onclick = () => { location.hash = ""; };
   function filtrar() {
     const q = buscador.value.toLowerCase();
-    const hallados = PROCESOS.filter(p => !p.padre && (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
+    const propios = PROCESOS.filter(p => !p.padre && areaDe(p) === area.id);
+    const hallados = propios.filter(p => (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
     lista.innerHTML = hallados.length
       ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}"><strong>${limpiar(p.nombre)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
-      : '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>';
+      : propios.length ? '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>' : '<p class="vacio">Aún no hay procesos en esta área.</p>';
   }
   buscador.addEventListener("input", filtrar);
   lista.addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) location.hash = b.dataset.id; });
@@ -172,11 +201,11 @@ function verMenu() {
 function verProceso(p) {
   const hijos = PROCESOS.filter(x => x.padre === p.id), padre = PROCESOS.find(x => x.id === p.padre);
   app.innerHTML = `
-    <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver al menú"}</button>
+    <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver a " + limpiar(nombreArea(areaDe(p)))}</button>
     <h2>${limpiar(p.nombre)}</h2><p class="sub">${limpiar(p.resumen)}</p>
     ${hijos.length ? `<h3>Subprocesos</h3><div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${limpiar(h.id)}"><strong>${limpiar(h.nombre)}</strong><span>${limpiar(h.resumen)}</span></button>`).join("")}</div>` : ""}
     <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
-  document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : ""; };
+  document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : "/" + areaDe(p); };
   const caja = document.getElementById("hijos");
   if (caja) caja.addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) location.hash = b.dataset.id; });
   window.scrollTo(0, 0);
@@ -187,15 +216,18 @@ function poner(banner) {
 }
 function navegar() {
   const id = decodeURIComponent(location.hash.slice(1));
-  if (id === "admin" || id === "editor") { poner(null); return acceso(); }
+  const enAdmin = id === "admin" || id === "editor", btnA = document.getElementById("btnAdmin");
+  if (btnA) btnA.style.display = (enAdmin || verBorrador) ? "none" : "block";
+  if (enAdmin) { poner(null); return acceso(); }
   app.className = ""; derivar(verBorrador ? D : PUB);
   if (verBorrador) {
     const b = document.createElement("div"); b.id = "banner"; b.className = "banner";
     b.innerHTML = 'Vista previa del BORRADOR (no publicado) <button id="volEd">Volver al editor</button>';
     poner(b); b.querySelector("button").onclick = () => { verBorrador = false; location.hash = "editor"; };
   } else poner(null);
+  if (id.startsWith("/")) { const a = AREAS.find(x => x.id === id.slice(1)); return a ? verMenu(a) : verAreas(); }
   const p = PROCESOS.find(x => x.id === id);
-  p ? verProceso(p) : verMenu();
+  p ? verProceso(p) : verAreas();
 }
 
 /* ================= ACCESO DE ADMINISTRADOR ================= */
@@ -232,7 +264,7 @@ function acceso() {
 }
 
 /* ================= EDITOR ================= */
-let pestana = "procesos", selProceso = null, selBloque = null;
+let pestana = "procesos", selProceso = null, selBloque = null, areaEd = "nomina";
 let mensajes = {};
 
 function h(tag, attrs = {}, ...hijos) {
@@ -286,12 +318,14 @@ function validar(d) {
     else if (idsP.has(p.id)) errores.push(`${et}: identificador repetido.`);
     idsP.add(p.id);
     if (!String(p.nombre || "").trim()) errores.push(`${et}: falta el nombre.`);
+    if (!AREAS.some(a => a.id === areaDe(p))) errores.push(`${et}: área desconocida.`);
     if (!p.pasos.length) avisos.push(`${et}: no tiene pasos.`);
     p.pasos.forEach((s, j) => {
       const ep = `${et}, paso ${j + 1}`;
       if ("bloque" in s) {
         const b = d.bloques.find(x => x.id === s.bloque);
         if (!b) errores.push(`${ep}: usa el bloque "${s.bloque}" que no existe.`);
+        else if (areaDe(b) !== areaDe(p)) errores.push(`${ep}: usa un paso común del área ${nombreArea(areaDe(b))}, pero este proceso es de ${nombreArea(areaDe(p))}. Cada área tiene sus propios pasos comunes.`);
         else paramsDe(b).forEach(n => { if (!(s.params || []).some(x => x.nombre === n)) avisos.push(`${ep}: el bloque "${s.bloque}" necesita el valor de {${n}}.`); });
       } else if (!String(s.titulo || "").trim()) errores.push(`${ep}: falta el título.`);
     });
@@ -299,6 +333,8 @@ function validar(d) {
   d.procesos.forEach(p => {
     if (p.padre && !idsP.has(p.padre)) errores.push(`Proceso "${p.id}": su proceso padre "${p.padre}" no existe.`);
     if (p.padre === p.id) errores.push(`Proceso "${p.id}": no puede ser padre de sí mismo.`);
+    const pa = p.padre && d.procesos.find(x => x.id === p.padre);
+    if (pa && areaDe(pa) !== areaDe(p)) errores.push(`Proceso "${p.id}": su proceso padre es de otra área.`);
   });
   return { errores, avisos };
 }
@@ -393,7 +429,7 @@ function vistaHerramientas(el) {
   const caja1 = h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "1. Reparar pasos que usan un bloque que no existe"));
   if (!rotos.length) caja1.append(h("p", { class: "nota" }, "✓ Todos los pasos comunes apuntan a un bloque que existe."));
   rotos.forEach(r => {
-    const sel = h("select", {}, h("option", { value: "" }, "(elige el bloque correcto)"), D.bloques.map(b => h("option", { value: b.id }, b.titulo)));
+    const sel = h("select", {}, h("option", { value: "" }, "(elige el bloque correcto)"), D.bloques.map(b => h("option", { value: b.id }, nombreArea(areaDe(b)) + " – " + b.titulo)));
     caja1.append(h("label", {}, r ? "Pasos que usan «" + r + "» (" + cuantos(r) + ")" : "Pasos comunes sin bloque elegido (" + cuantos(r) + ")"), sel,
       h("p", {}, h("button", { class: "b mini pri", onclick: () => {
         if (!sel.value) return alert("Primero elige el bloque correcto en la lista.");
@@ -547,18 +583,24 @@ function controlImagen(obj) {
 }
 
 /* ----- PROCESOS ----- */
+function selectorArea(contar) {
+  return h("div", {}, h("p", { class: "nota", style: "margin:0 0 4px" }, "Área que estás editando:"),
+    h("div", { class: "tabs", style: "margin-bottom:12px" }, AREAS.map(a => h("button", { class: areaEd === a.id ? "activa" : "", onclick: () => { areaEd = a.id; selProceso = selBloque = null; pintarEditor(); } }, a.nombre + " (" + contar(a.id) + ")"))));
+}
 function vistaProcesos(el) {
   if (selProceso) { const p = D.procesos.find(x => x.id === selProceso); if (p) return editorProceso(el, p); selProceso = null; }
-  el.append(h("div", { class: "fila", style: "margin-bottom:12px" }, h("h3", { class: "crece", style: "margin:0" }, "Procesos"),
+  el.append(selectorArea(id => D.procesos.filter(p => areaDe(p) === id).length));
+  el.append(h("div", { class: "fila", style: "margin-bottom:12px" }, h("h3", { class: "crece", style: "margin:0" }, "Procesos de " + nombreArea(areaEd)),
     h("button", { class: "b pri", onclick: () => {
       const id = idUnico("nuevo_proceso", new Set(D.procesos.map(p => p.id)));
-      D.procesos.push({ id, nombre: "Nuevo proceso", resumen: "", pasos: [] }); selProceso = id; marcarSucio(); pintarEditor();
+      D.procesos.push({ id, nombre: "Nuevo proceso", area: areaEd, resumen: "", pasos: [] }); selProceso = id; marcarSucio(); pintarEditor();
     } }, "+ Nuevo proceso")));
-  const filas = [];
-  D.procesos.filter(p => !p.padre).forEach(p => { filas.push(p); D.procesos.filter(x => x.padre === p.id).forEach(x => filas.push(x)); });
-  D.procesos.filter(p => p.padre && !D.procesos.some(x => x.id === p.padre)).forEach(p => filas.push(p));
+  const delArea = x => areaDe(x) === areaEd, filas = [];
+  D.procesos.filter(p => !p.padre && delArea(p)).forEach(p => { filas.push(p); D.procesos.filter(x => x.padre === p.id).forEach(x => filas.push(x)); });
+  D.procesos.filter(p => p.padre && delArea(p) && !D.procesos.some(x => x.id === p.padre)).forEach(p => filas.push(p));
+  if (!filas.length) el.append(h("p", { class: "nota" }, "Aún no hay procesos en esta área. Pulsa «+ Nuevo proceso»."));
   const hermano = (p, dir) => { const i = D.procesos.indexOf(p), r = dir < 0 ? D.procesos.slice(0, i).map((x, k) => [x, k]).reverse() : D.procesos.map((x, k) => [x, k]).slice(i + 1);
-    return r.find(([x]) => x.padre === p.padre); };
+    return r.find(([x]) => x.padre === p.padre && areaDe(x) === areaDe(p)); };
   filas.forEach(p => el.append(h("div", { class: "item" + (p.padre ? " hijo" : "") },
     h("div", { class: "txt", onclick: () => { selProceso = p.id; pintarEditor(); } },
       h("strong", {}, p.nombre, " ", p.padre ? h("span", { class: "etq" }, "subproceso") : null), h("span", {}, `${p.pasos.length} pasos · ${p.resumen || "sin resumen"}`)),
@@ -568,10 +610,16 @@ function vistaProcesos(el) {
 function editorProceso(el, p) {
   const hijos = D.procesos.filter(x => x.padre === p.id);
   el.append(h("button", { class: "b", onclick: () => { selProceso = null; pintarEditor(); } }, "‹ Volver a la lista"));
-  const opcionesPadre = D.procesos.filter(x => x !== p && !x.padre && !hijos.includes(x));
+  const opcionesPadre = D.procesos.filter(x => x !== p && !x.padre && !hijos.includes(x) && areaDe(x) === areaDe(p));
   el.append(h("div", { class: "tarjeta", style: "margin-top:12px" },
     h("label", {}, "Nombre del proceso"), h("input", { value: p.nombre, oninput: e => { p.nombre = e.target.value; autoIdProceso(p); const c = document.getElementById("idint"); if (c) c.textContent = p.id; marcarSucio(); } }),
     h("label", {}, "Resumen (se ve en el menú)"), h("input", { value: p.resumen || "", oninput: e => { p.resumen = e.target.value; marcarSucio(); } }),
+    h("label", {}, "Área"),
+    h("select", { value: areaDe(p), onchange: e => {
+      const nueva = e.target.value; if (nueva === areaDe(p)) return;
+      if (!confirm("¿Mover este proceso (y sus subprocesos) al área " + nombreArea(nueva) + "? Sus pasos comunes deberán existir en esa área.")) { e.target.value = areaDe(p); return; }
+      p.area = nueva; delete p.padre; hijos.forEach(x => { x.area = nueva; }); areaEd = nueva; marcarSucio(); pintarEditor();
+    } }, AREAS.map(a => h("option", { value: a.id }, a.nombre))),
     h("label", {}, "¿Es subproceso de otro proceso?"),
     h("select", { value: p.padre || "", onchange: e => { if (e.target.value) p.padre = e.target.value; else delete p.padre; marcarSucio(); } },
       h("option", { value: "" }, "No, es un proceso principal"), opcionesPadre.map(x => h("option", { value: x.id }, "Sí, de: " + x.nombre))),
@@ -581,7 +629,7 @@ function editorProceso(el, p) {
   p.pasos.forEach((s, i) => el.append(tarjetaPaso(p, s, i)));
   el.append(h("div", { class: "fila" },
     h("button", { class: "b pri", onclick: () => { p.pasos.push({ titulo: "", texto: "" }); marcarSucio(); pintarEditor(); } }, "+ Paso propio"),
-    h("button", { class: "b", onclick: () => { p.pasos.push({ bloque: D.bloques[0]?.id || "", params: [] }); marcarSucio(); pintarEditor(); } }, "+ Paso común (bloque)")),
+    h("button", { class: "b", onclick: () => { const b0 = D.bloques.find(b => areaDe(b) === areaDe(p)); if (!b0) return alert("Esta área todavía no tiene pasos comunes. Créalos primero en la pestaña «Pasos comunes»."); p.pasos.push({ bloque: b0.id, params: [] }); marcarSucio(); pintarEditor(); } }, "+ Paso común (bloque)")),
     h("hr", { style: "margin:26px 0 14px;border:0;border-top:1px solid var(--linea)" }),
     h("button", { class: "b pel", onclick: () => {
       if (hijos.length) return alert("Primero elimina o mueve sus subprocesos: " + hijos.map(x => x.nombre).join(", "));
@@ -602,13 +650,13 @@ function tarjetaPaso(p, s, i) {
       h("label", {}, "Instrucciones"), ta, h("p", { class: "nota" }, "Cada Enter es un salto de línea."), controlImagen(s),
       h("p", {}, h("button", { class: "b mini", onclick: () => {
         if (!confirm("¿Convertir en paso común? Se perderá el texto de este paso.")) return;
-        const img = s.imagen; Object.keys(s).forEach(k => delete s[k]); s.bloque = D.bloques[0]?.id || ""; s.params = []; if (img) s.imagen = img; marcarSucio(); pintarEditor();
+        const img = s.imagen; Object.keys(s).forEach(k => delete s[k]); s.bloque = D.bloques.find(b => areaDe(b) === areaDe(p))?.id || ""; s.params = []; if (img) s.imagen = img; marcarSucio(); pintarEditor();
       } }, "Cambiar a paso común")));
   } else {
     const b = D.bloques.find(x => x.id === s.bloque);
     caja.append(h("label", {}, "Bloque a usar"),
       h("select", { value: s.bloque, onchange: e => { s.bloque = e.target.value; s.params = []; marcarSucio(); pintarEditor(); } },
-        !b ? h("option", { value: s.bloque }, `(no existe: ${s.bloque})`) : null, D.bloques.map(x => h("option", { value: x.id }, x.titulo))));
+        !b ? h("option", { value: s.bloque }, `(no existe: ${s.bloque})`) : null, D.bloques.filter(x => areaDe(x) === areaDe(p) || x.id === s.bloque).map(x => h("option", { value: x.id }, x.titulo))));
     if (b) {
       caja.append(h("p", { class: "nota" }, "Texto del bloque: ", b.texto.slice(0, 160) + (b.texto.length > 160 ? "…" : "")));
       s.params = s.params || []; const nec = paramsDe(b);
@@ -632,16 +680,20 @@ function tarjetaPaso(p, s, i) {
 /* ----- BLOQUES ----- */
 function vistaBloques(el) {
   if (selBloque) { const b = D.bloques.find(x => x.id === selBloque); if (b) return editorBloque(el, b); selBloque = null; }
-  el.append(h("div", { class: "fila", style: "margin-bottom:6px" }, h("h3", { class: "crece", style: "margin:0" }, "Pasos comunes (bloques)"),
+  el.append(selectorArea(id => D.bloques.filter(b => areaDe(b) === id).length));
+  el.append(h("div", { class: "fila", style: "margin-bottom:6px" }, h("h3", { class: "crece", style: "margin:0" }, "Pasos comunes de " + nombreArea(areaEd)),
     h("button", { class: "b pri", onclick: () => {
       const id = idUnico("nuevo_paso_comun", new Set(D.bloques.map(b => b.id)));
-      D.bloques.push({ id, titulo: "Nuevo paso común", texto: "" }); selBloque = id; marcarSucio(); pintarEditor();
+      D.bloques.push({ id, area: areaEd, titulo: "Nuevo paso común", texto: "" }); selBloque = id; marcarSucio(); pintarEditor();
     } }, "+ Nuevo bloque")),
-    h("p", { class: "nota" }, "Un bloque es un paso que se repite en varios procesos. Si lo cambias aquí, cambia en todos los que lo usan."));
-  D.bloques.forEach((b, i) => el.append(h("div", { class: "item" },
-    h("div", { class: "txt", onclick: () => { selBloque = b.id; pintarEditor(); } }, h("strong", {}, b.titulo), h("span", {}, `Usado ${usosBloque(b.id)} veces · ${b.id}`)),
-    h("button", { class: "b mini", disabled: i === 0, onclick: () => { mover(D.bloques, i, -1); pintarEditor(); } }, "↑"),
-    h("button", { class: "b mini", disabled: i === D.bloques.length - 1, onclick: () => { mover(D.bloques, i, 1); pintarEditor(); } }, "↓"))));
+    h("p", { class: "nota" }, "Un bloque es un paso que se repite en varios procesos de esta misma área. Si lo cambias aquí, cambia en todos los que lo usan."));
+  const lista = D.bloques.filter(b => areaDe(b) === areaEd);
+  if (!lista.length) el.append(h("p", { class: "nota" }, "Aún no hay pasos comunes en esta área."));
+  const moverEn = (b, dir) => { const k = lista.indexOf(b), o = lista[k + dir]; if (!o) return; mover(D.bloques, D.bloques.indexOf(b), D.bloques.indexOf(o) - D.bloques.indexOf(b)); pintarEditor(); };
+  lista.forEach((b, i) => el.append(h("div", { class: "item" },
+    h("div", { class: "txt", onclick: () => { selBloque = b.id; pintarEditor(); } }, h("strong", {}, b.titulo), h("span", {}, `Usado ${usosBloque(b.id)} veces`)),
+    h("button", { class: "b mini", disabled: i === 0, onclick: () => moverEn(b, -1) }, "↑"),
+    h("button", { class: "b mini", disabled: i === lista.length - 1, onclick: () => moverEn(b, 1) }, "↓"))));
 }
 function editorBloque(el, b) {
   const usos = D.procesos.filter(p => p.pasos.some(s => s.bloque === b.id));
@@ -665,7 +717,7 @@ function editorBloque(el, b) {
 const cargar = url => fetch(url, { cache: "no-store" }).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
 Promise.all([cargar("datos/bloques.json"), cargar("datos/procesos.json"), cargar("datos/admin.json").catch(() => null)])
   .then(([b, p, a]) => {
-    ADMIN = a;
+    ADMIN = a; crearBotonAdmin();
     { const usadas = new Set(rutasUsadas({ bloques: b.bloques, procesos: p.procesos })); let t = false; Object.keys(IMGS).forEach(r => { if (usadas.has(r)) { delete IMGS[r]; t = true; } }); if (t) guardarImgs(); }
     PUB = { bloques: b.bloques, procesos: p.procesos };
     const guardado = leerBorrador();
