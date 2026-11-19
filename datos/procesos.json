@@ -737,6 +737,34 @@
           "texto": "Preparar los demás documentos requeridos para la vinculación, garantizando que la información de todos los documentos sea correcta."
         }
       ]
+    },
+    {
+      "id": "firma_de_contrato_y_documentos_de_ingreso",
+      "nombre": "Firma de contrato y documentos de ingreso",
+      "area": "contratacion",
+      "resumen": "Firma del contrato del empleado próximo a entrar.",
+      "pasos": [
+        {
+          "titulo": "Validar documentos",
+          "texto": "Se validan los documentos cargados por el candidato y la información diligenciada en el formulario, verificando que este completa y cumpla con los requisitos establecidos "
+        },
+        {
+          "titulo": "Enviar documentos al candidato",
+          "texto": "Enviar los documentos para firma por correo electrónico. En ese mismo correo se solicita devolver la documentación firmada respondiendo ese mismo correo"
+        },
+        {
+          "titulo": "Gestión de firmas",
+          "texto": "Gestionar firmas para personal de operaciones. Para personal de la Sede Guarne, Cartagena y Rionegro, los documentos se envían al equipo de Talento Humano de cada sede, quienes realizan la impresión y gestionan la firma. "
+        },
+        {
+          "titulo": "Recepción y validación de documentación",
+          "texto": "Recibir y validar la documentación firmada."
+        },
+        {
+          "titulo": "Digitalización de documentos",
+          "texto": "Digitalizar y archivar los documentos en la carpeta del colaborador"
+        }
+      ]
     }
   ]
 }
