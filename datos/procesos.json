@@ -717,6 +717,26 @@
           "texto": "Validar que este la información necesaria y documentos de proceso de selección. Para temporales se recibe correo del temporal confirmando contratación y envían información necesaria para ingresar al candidato a SIPE y Potencia."
         }
       ]
+    },
+    {
+      "id": "elaboracion_de_contratos_de_trabajo_y_formatos_de",
+      "nombre": "Elaboración de contratos de trabajo y formatos de contratación",
+      "area": "contratacion",
+      "resumen": "Proceso de generación, revisión y formalización de contratos y documentos de vinculación, asegurando el cumplimiento de los requisitos legales y organizacionales para el ingreso del trabajador.",
+      "pasos": [
+        {
+          "titulo": "Validar condiciones ",
+          "texto": "Validar condiciones de contratación enviada por Selección, sea para contrato laboral o de aprendizaje."
+        },
+        {
+          "titulo": "Elaboración de contrato",
+          "texto": "Redactar el contrato garantizando que las condiciones acordadas coincidan."
+        },
+        {
+          "titulo": "Preparación de documentos",
+          "texto": "Preparar los demás documentos requeridos para la vinculación, garantizando que la información de todos los documentos sea correcta."
+        }
+      ]
     }
   ]
 }
