@@ -48,12 +48,14 @@
           ]
         },
         {
-          "bloque": "gestionTemporales"
+          "bloque": "gestionTemporales",
+          "params": []
         },
         {
           "titulo": "Filtrar colaboradores vinculados",
           "texto": "Filtrar los colaboradores vinculados de Mobility.",
-          "bloque": "depuracionBasesTrabajo"
+          "bloque": "depuracionBasesTrabajo",
+          "params": []
         },
         {
           "titulo": "Calcular horas extras y recargos",
@@ -62,7 +64,8 @@
         {
           "titulo": "Calcular Permiso No Remunerado",
           "texto": "Calcular el valor correspondiente al Permiso No Remunerado (PNR).(USAR PARA EL PROCESO DE PERMISO NO REMUNERADO)",
-          "bloque": "determinacionPeriodoNomina"
+          "bloque": "determinacionPeriodoNomina",
+          "params": []
         },
         {
           "titulo": "Calcular Auxilio de Movilidad",
@@ -78,7 +81,7 @@
         {
           "titulo": "Aplicar redondeo",
           "texto": "Aplicar el redondeo correspondiente al PNR.",
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "bloque": "planoPagosDeducciones",
@@ -90,10 +93,11 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
-          "bloque": "validacionPosteriorCarga"
+          "bloque": "validacionPosteriorCarga",
+          "params": []
         }
       ],
       "id": "horas-extras-masivo"
@@ -195,7 +199,7 @@
         {
           "titulo": "Aplicar redondeo",
           "texto": "Aplicar el redondeo correspondiente al PNR.",
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "titulo": "Aplicar redondeo",
@@ -212,7 +216,7 @@
           "titulo": "Construir la hoja PTERCERO del plano",
           "texto": "En la hoja CONSOLIDADO 2, filtrar primero por la empresa que se va a procesar.\n\nCon la empresa filtrada, procesar cada concepto de forma individual (EXCEPTO POR PNR, AUXILIO DE MOVILIDAD , debido a que esas 2 novedades tienen su propio). Para cada concepto:\n1. Aplicar el filtro sobre la columna correspondiente.\n2. Excluir los registros cuyo valor sea 0.\n3. Conservar únicamente los colaboradores con valores para ese concepto.\n4. Registrar la información resultante en la hoja PTERCERO del archivo PLANO HE.\n\nEstructura de la hoja PTERCERO:\n- Columna A: código de la empresa.\n- Columna B: año actual.\n- Columna C: periodo.\n- Columna D: cédula.\n- Columna E: concepto de novedad.\n- Columna F: fecha del periodo.\n- Columna J: cantidad de horas.\n\nNota: ocultar las columnas de conceptos que no se utilizarán (las que no tienen color en el encabezado) y conservar solo las transformadas para el cargue.\n\nPunto de control: verificar que cada concepto se filtró individualmente y que en PTERCERO no hay registros con valor 0.",
           "imagen": "info de empresas.png",
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "titulo": "Generar el archivo plano",
@@ -257,7 +261,7 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "bloque": "validacionPosteriorCarga"
@@ -295,7 +299,7 @@
         {
           "titulo": "Construir el plano para permisos menores a 8.4 horas",
           "texto": "Este paso se realiza únicamente con los permisos no remunerados menores a 8.4 horas.\n\n1. Abrir el archivo PAGOS Y DEDUCCIONES REIN RECO. Se diligencia casi igual que los otros planos; lo que cambia es el concepto y el valor.\n2. Filtrar y conservar únicamente los registros con valor diferente de 0 y con horas de permiso menores a 8.4.\n3. Trasladar al plano:\n   - Cédula del colaborador.\n   - Nombre del colaborador.\n   - Valor de la columna REDONDEO PNR.\n4. Registrar además:\n   - Concepto: 003 (Permiso No Remunerado).\n   - Periodo correspondiente a la nómina procesada.\n5. Los demás campos de la plantilla ya están parametrizados.\n\nPunto de control: verificar que los valores del plano coincidan con la columna REDONDEO PNR.",
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "titulo": "Generar el archivo CSV",
@@ -310,7 +314,7 @@
         {
           "titulo": "Diferencia al cargar este plano",
           "texto": "La carga se hace igual que en el proceso Productividad CEDI. La única diferencia es el parámetro Tipo de archivo: debe configurarse como Separadores y no como Posiciones.",
-          "bloque": "registroManualSIPEC",
+          "bloque": "registroManualSIPE",
           "params": [
             {
               "nombre": "concepto",
@@ -356,7 +360,7 @@
           "imagen": "fondo de empleados/fondo- 2.png"
         },
         {
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "bloque": "validacionPosteriorCarga"
@@ -426,7 +430,7 @@
           ]
         },
         {
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "bloque": "validacionPosteriorCarga"
@@ -512,7 +516,7 @@
           "texto": "Guardar el archivo en formato CSV (delimitado por comas), utilizando una nomenclatura que permita identificar la empresa y la novedad registrada.\n\nEjemplos:\n- BONIAUT.\n- BONIMOB.\n- BONICEN.\n- BONIBLU."
         },
         {
-          "bloque": "cargaPlanoSIPEC"
+          "bloque": "cargaPlanoSIPE"
         },
         {
           "bloque": "validacionPosteriorCarga"
@@ -598,7 +602,7 @@
         {
           "titulo": "Descargar las horas extras",
           "texto": "Descargar el reporte de horas extras del colaborador y validar las horas a registrar.",
-          "bloque": "registroManualSIPEC",
+          "bloque": "registroManualSIPE",
           "params": [
             {
               "nombre": "concepto",
@@ -646,7 +650,7 @@
         {
           "titulo": "Descargar las horas extras",
           "texto": "Descargar el reporte de horas extras del colaborador y validar las horas a registrar.",
-          "bloque": "registroManualSIPEC",
+          "bloque": "registroManualSIPE",
           "params": [
             {
               "nombre": "concepto",
@@ -655,7 +659,7 @@
           ]
         },
         {
-          "bloque": "registroManualSIPEC",
+          "bloque": "registroManualSIPE",
           "params": [
             {
               "nombre": "concepto",
@@ -675,21 +679,35 @@
       "padre": "",
       "pasos": [
         {
-          "titulo": "Revisar correo electrónico donde se enviaran todas las novedades.",
-          "texto": "Se recepcionan las solicitudes de vacaciones enviadas por las personas encargadas.Donde solicitan las vacaciones con fecha inicial y final.",
-          "imagen": "",
-          "bloque": "",
-          "params": []
+          "titulo": "Recepción de Correo Electronico",
+          "texto": "Recibir todas las solicitudes de vacaciones por correo electrónico"
         },
         {
           "titulo": "Entrar a Sipe",
           "texto": "Entrar a SIPE con la siguiente ruta Transacciones>Novedades>Reporte de Labores, dar clic en F3 para buscar por nombre o apellido. Se tiene que diligenciar la información necesaria:\n\n- Periodo correspondiente\n-Fecha inicial-Fecha final\n-Concepto: En el caso de vacaciones es el 200\n-Presionar TAB hasta el dato final\n-Finalmente dar clic en Guardar para dejar terminado el registro.",
           "imagen": "",
-          "bloque": "",
-          "params": []
+          "bloque": "planoPagosDeducciones",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "200"
+            }
+          ]
         }
       ],
       "id": "vacaciones-sipe"
+    },
+    {
+      "id": "Inscripcion-sipe",
+      "nombre": "Inscripción a SIPE",
+      "resumen": "",
+      "pasos": [
+        {
+          "titulo": "Solicitar datos de ingreso",
+          "texto": "1. Solicitar Correo electrónico\n2. Enviar los datos a la encargada de Nómina ",
+          "imagen": "img/captura-de-pantalla-2026-08-20-081901-carp.webp"
+        }
+      ]
     }
   ]
 }
