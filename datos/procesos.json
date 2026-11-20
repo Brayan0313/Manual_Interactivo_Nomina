@@ -801,6 +801,11 @@
           "titulo": "Selección del NIT",
           "texto": "Selecciono el NIT de la empresa a la que voy a ingresar - continuar:",
           "imagen": "img/nit-c569.webp"
+        },
+        {
+          "titulo": "Afiliar al empleado",
+          "texto": "En la opción Registro de novedades – Trabajadores- Afiliación:",
+          "imagen": "img/registro-novedades-qsn3.webp"
         }
       ]
     }
