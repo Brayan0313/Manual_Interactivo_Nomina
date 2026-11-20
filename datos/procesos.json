@@ -765,6 +765,44 @@
           "texto": "Digitalizar y archivar los documentos en la carpeta del colaborador"
         }
       ]
+    },
+    {
+      "id": "afiliacion_caja_de_compensacion_familiar",
+      "nombre": "Afiliación Caja de Compensación Familiar",
+      "area": "contratacion",
+      "resumen": "Se debe realizar en lo posible el mismo día del ingreso, a más tardar al día siguiente",
+      "pasos": [
+        {
+          "titulo": "Ingresar a la página de Comfama.",
+          "texto": "Ingresamos al siguiente enlace: https://www.comfama.com/empresa/. Ingresamos con el usuario y contraseña correspondiente",
+          "imagen": "img/comfama-acceso-hk19.webp"
+        },
+        {
+          "titulo": "Ingresar a servicios en linea",
+          "texto": "",
+          "imagen": "img/servicios-en-linea-65qd.webp"
+        },
+        {
+          "titulo": "Seleccionar la opción Empresa",
+          "texto": "",
+          "imagen": "img/comfama-empresa-whsv.webp"
+        },
+        {
+          "titulo": "Seleccionar la Opción Subsidio",
+          "texto": "Vamos a servicios en linea y seleccionamos la opción de subsidio",
+          "imagen": "img/subsidio-imagen-x55r.webp"
+        },
+        {
+          "titulo": "Seleccionar la opción afiliación ",
+          "texto": "",
+          "imagen": "img/afiliacion-s4ra.webp"
+        },
+        {
+          "titulo": "Selección del NIT",
+          "texto": "Selecciono el NIT de la empresa a la que voy a ingresar - continuar:",
+          "imagen": "img/nit-c569.webp"
+        }
+      ]
     }
   ]
 }
