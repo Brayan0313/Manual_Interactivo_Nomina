@@ -837,6 +837,32 @@
           "imagen": "img/image-png-1-9xf6.webp"
         }
       ]
+    },
+    {
+      "id": "retiro_empleados_caja_de_compensacion",
+      "nombre": "Retiro empleados Caja de Compensación",
+      "area": "contratacion",
+      "resumen": "Cuando un colaborador termina su contrato con Auteco, tiene que ser retirado de la caja de compensación familiar asignada por la empresa",
+      "pasos": [
+        {
+          "titulo": "Ingresar a la siguiente ruta en Comfama.",
+          "texto": "Ingresar a REGISTRO DE NOVEDADES - TRABAJADORES -RETIROS",
+          "imagen": "img/ruta-retiro-jcge.webp"
+        },
+        {
+          "titulo": "Búsqueda del colaborador y diligenciamiento de información",
+          "texto": "Seleccionar el tipo de documento y numero del empleado que se va a retirar y  dar clic en Buscar, eso traerá automáticamente los datos del empleado. En datos de trabajador a retirar colocar la fecha de retiro y el motivo por lo general se debe seleccionar terminación de contrato y dar clic en ACEPTAR.",
+          "imagen": "img/retiro-trabajador-motivo-ilpu.webp"
+        },
+        {
+          "titulo": "Soporte de retiro",
+          "texto": "Para generar soporte de retiro se tiene que ingresar a CONSULTAS- NOVEDADES DEL SUBSIDIO- NOVEDADES POR LA WEB- seleccionar fecha de novedad y cedula del empleado y dar clic en Buscar."
+        },
+        {
+          "titulo": "Inclusión y retiro de beneficiarios",
+          "texto": "Ingresar a REGISTRO DE NOVEDADES – PERSONAS A CARGO- SELECCIONAR RETIRO "
+        }
+      ]
     }
   ]
 }
