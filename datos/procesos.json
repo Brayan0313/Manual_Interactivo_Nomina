@@ -863,6 +863,43 @@
           "texto": "Ingresar a REGISTRO DE NOVEDADES – PERSONAS A CARGO- SELECCIONAR RETIRO "
         }
       ]
+    },
+    {
+      "id": "proceso_de_inscripcion_aprendices_en_caprendizaje",
+      "nombre": "Proceso de inscripción aprendices en Caprendizaje SENA",
+      "area": "contratacion",
+      "resumen": "Gestionar la inscripción y seguimiento de los aprendices en la plataforma Caprendizaje del SENA, garantizando el cumplimiento de los requisitos legales del contrato de aprendizaje.",
+      "pasos": [
+        {
+          "titulo": "Ingresar a la pagina de Caprendizaje SENA ",
+          "texto": "Ingresar a la página de caprendizaje Sena con el usuario y clave de la empresa:\nhttps://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx\n"
+        },
+        {
+          "titulo": "Seleccionar la opción REGISTRAR CONTRATOS",
+          "texto": "",
+          "imagen": "img/registrar-contrato-sena-ql8l.webp"
+        },
+        {
+          "titulo": "Seleccionar el tipo de aprendiz.",
+          "texto": "Seleccionar el tipo de aprendiz: esto depende de la institución donde esté estudiando y si es técnico/tecnólogo o carrera universitaria.\n•\tsí es del Sena se deja tipo aprendiz: aprendiz Sena,\n•\tsi es de otra institución diferente al Sena y está estudiando una técnica o tecnología, se debe seleccionar la opción entidades de formación con certificación de calidad. \n•\tSi esta estudiando una carrera universitaria (practicantes universitarios), se debe seleccionar técnico o tecnólogo de educación superior. \n",
+          "imagen": "img/image-png-2-ia7m.webp"
+        },
+        {
+          "titulo": "Buscar al colaborador con Cedula de Ciudadania.",
+          "texto": "Después de seleccionar tipo de aprendiz, buscar por número de documento de identidad y dar clic en Buscar. Cuando el aprendiz es del Sena el sistema nos trae la información personal automáticamente, cuando es de una institución diferente se debe diligenciar toda la información.",
+          "imagen": "img/registrar-info-sena-3n8r.webp"
+        },
+        {
+          "titulo": "Diligenciar la información de datos académicos.",
+          "texto": "Una vez diligenciados los datos académicos y los datos del contrato, verificar que las fechas de inicio y finalización sean correctas. Finalmente, hacer clic en REGISTRAR CONTRATO para completar el registro del aprendiz.",
+          "imagen": "img/registrar-contrato-censura-7xz8.webp"
+        },
+        {
+          "titulo": "Validar que la inscripción fue correcta. ",
+          "texto": "Para validar que el contrato de aprendizaje fue registrado correctamente y conservar un soporte del proceso, ingresar a la opción Reportes y estado de cuenta ubicada en el menú lateral izquierdo. Luego, seleccionar Reporte de contrato, elegir el estado Vigente e ingresar el número de documento del aprendiz. Al realizar la consulta, el sistema mostrará la información registrada del contrato. Verificar que los datos sean correctos y tomar una captura de pantalla como evidencia del registro exitoso.",
+          "imagen": "img/validacion-sena-nbht.webp"
+        }
+      ]
     }
   ]
 }
