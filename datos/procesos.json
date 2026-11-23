@@ -900,6 +900,19 @@
           "imagen": "img/validacion-sena-nbht.webp"
         }
       ]
+    },
+    {
+      "id": "migracion_sire",
+      "nombre": "MIGRACION: SIRE ",
+      "area": "contratacion",
+      "resumen": "Registrar y reportar oportunamente la información de personal extranjero ante Migración Colombia a través de la plataforma SIRE, asegurando el cumplimiento de la normativa migratoria vigente.",
+      "pasos": [
+        {
+          "titulo": "1. Acceso a plataforma SIRE",
+          "texto": "El usuario accede al Sistema de Información para el Reporte de Extranjeros (SIRE) mediante el portal de Migración Colombia, donde se encuentran habilitadas las opciones y funcionalidades requeridas para la gestión del proceso.",
+          "imagen": "img/image-png-3-34e5.webp"
+        }
+      ]
     }
   ]
 }
