@@ -806,6 +806,35 @@
           "titulo": "Afiliar al empleado",
           "texto": "En la opción Registro de novedades – Trabajadores- Afiliación:",
           "imagen": "img/registro-novedades-qsn3.webp"
+        },
+        {
+          "titulo": "Ingresar información del empleado",
+          "texto": "Ingresar el tipo de documento y numero del empleado que queremos afiliar y le damos en buscar, (si la persona ya a estado afiliada a Comfama nos trae el resto de la información personal de manera automática, solo debemos diligenciar la opción de estado civil (debemos tener en cuenta que para seleccionar la opción de casado y unión libre el empleado que ingresa debe presentar documentos de su conyugue y/o compañera), en caso de que el empleado nunca halla estado afiliado a Comfama le debemos diligenciar toda la información desde los datos personales:",
+          "imagen": "img/ingresar-datos-s17a.webp"
+        },
+        {
+          "titulo": "Completar datos de diligencia",
+          "texto": "Diligenciar la información de los datos de residencia del empleado:",
+          "imagen": "img/domicilio-bfcp.webp"
+        },
+        {
+          "titulo": "Ingresar información laboral.",
+          "texto": "Ingresar los datos laborales requeridos, tales como:\n- Tipo de contrato\n- Salario\n- Fecha de Ingreso\n\nNOTA: En el caso que el estado civil de la persona sea casada o en unión libre debemos diligenciar la información requerida del conyugue.\n\nAl diligenciar toda la información necesaria, se da clic en CONTINUAR AL PASO 2",
+          "imagen": "img/paso-2-nw54.webp"
+        },
+        {
+          "titulo": "Posible afiliación de beneficiarios, en caso que la persona la tenga. ",
+          "texto": "Posteriormente se abre un cuadro con la opción para ingresar los beneficiarios en caso de que el empleado los tenga (si la persona no tiene beneficiarios seleccionar aceptar y terminar el proceso), los beneficiarios que puede afiliar son padres, hijos y conyugue, le damos en ingresar persona a cargo.\n\nIngresamos los datos del beneficiario y le damos en aceptar, nos devuelve al cuadro anterior y tenemos la opción de ingresar un nuevo beneficiario si es el caso, dando clic nuevamente en la opción ingreso de persona a cargo. \n\nNota: En caso que la persona no tenga ningún beneficiario, le damos en Aceptar para continuar con el proceso.",
+          "imagen": "img/image-png-mbd7.webp"
+        },
+        {
+          "titulo": "Posible Subsidio",
+          "texto": "Cuando se hayan registrado todos los beneficiarios, si el trabajador tiene derecho al subsidio familiar, el sistema solicitará seleccionar el medio de pago del subsidio. En este caso, se debe dejar la opción predeterminada \"Tarjeta de afiliado\" y hacer clic en Aceptar. Posteriormente, el sistema mostrará un mensaje de confirmación indicando que la afiliación fue realizada exitosamente."
+        },
+        {
+          "titulo": "Generación del radicado",
+          "texto": "Para generar el radicado para guardar, ingresamos a consultas- novedades de subsidio y seguir los siguientes pasos\n\n1. En tipo de consulta seleccionar Novedades por la Web\n2. Ingresar en Fecha inicial y Fecha final la fecha en la que se realizó la afiliación.\n3. Si durante el día se realizaron varias afiliaciones o novedades, seleccionar el filtro Por empleado e ingresar el número de cédula del trabajador que se desea consultar.\n4.Hacer clic en Buscar.\n5.Verificar la información generada por el sistema correspondiente al trabajador consultado.\n6.Descargar el archivo PDF generado por el sistema.\n7.Guardar el PDF en la carpeta correspondiente como soporte de la afiliación realizada.",
+          "imagen": "img/image-png-1-9xf6.webp"
         }
       ]
     }
