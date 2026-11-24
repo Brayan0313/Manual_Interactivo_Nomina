@@ -911,6 +911,45 @@
           "titulo": "1. Acceso a plataforma SIRE",
           "texto": "El usuario accede al Sistema de Información para el Reporte de Extranjeros (SIRE) mediante el portal de Migración Colombia, donde se encuentran habilitadas las opciones y funcionalidades requeridas para la gestión del proceso.",
           "imagen": "img/image-png-3-34e5.webp"
+        },
+        {
+          "titulo": "Selección tipo de reporte",
+          "texto": "En esta sección se selecciona el tipo de reporte que realizará la organización de acuerdo con su obligación ante Migración Colombia. El sistema dispone de diferentes categorías, como alojamiento y hospedaje, cooperantes y voluntarios, actividades académicas, religiosas, servicios de salud, espectáculos artísticos, culturales o deportivos, entre otras. Para las empresas que vinculan personal extranjero, la opción \"Vinculación o Contratación de Extranjeros\" se encuentra habilitada por defecto. Al posicionar el cursor sobre cada categoría, el sistema muestra una descripción con el detalle de la obligación correspondiente.",
+          "imagen": "img/image-png-4-z9u6.webp"
+        },
+        {
+          "titulo": "Seleccionar tipo de persona y datos de inscripción",
+          "texto": "En esta sección se define si la inscripción será realizada por una persona natural o persona jurídica. Para las personas naturales, el sistema permite seleccionar si cuentan o no con actividad comercial. Según la opción elegida, se deberán diligenciar los datos de identificación correspondientes, como NIT, dígito de verificación, matrícula mercantil o número de documento. Adicionalmente, se registra la información general de la persona o entidad obligada a reportar, incluyendo datos como tipo de empresa, grupo empresarial, nombre de la empresa, naturaleza jurídica, correo electrónico y demás campos requeridos por el sistema.",
+          "imagen": "img/image-png-5-6rst.webp"
+        },
+        {
+          "titulo": "Diligenciar datos de ubicación",
+          "texto": "En esta sección se solicitan al usuario la información correspondiente a la ubicación de la Persona natural o Jurídica que ostenta la obligación de reportar, los campos que se solicitan son: “Dirección”, “Fax”, “Teléfono Fijo”, “Teléfono Móvil”, “Departamento”, “Ciudad”, “Corregimiento”, “Descripción adicional de la ubicación” si la ciudad los tiene, entre otros.",
+          "imagen": "img/image-png-6-jrnd.webp"
+        },
+        {
+          "titulo": "Diligenciar datos del responsable del reporte",
+          "texto": "En esta sección se solicitan los datos de la persona responsable del reporte, quien será el primer usuario con posibilidad de cargar información dejando al mismo como Cuenta Principal del registro, desde la cual será posible crear nuevos usuarios si así se requiere. ",
+          "imagen": "img/image-png-7-65wm.webp"
+        },
+        {
+          "titulo": "Adjuntar documentos",
+          "texto": "En esta sección del registro, se solicita al usuario los documentos requeridos (Obligatorios) que soportan la existencia de Persona natural o Jurídica que ostenta la obligación de reportar, los documentos solicitados varían según el “Tipo de Persona” seleccionado en el segmento de Datos Básicos ",
+          "imagen": "img/image-png-8-ulkt.webp"
+        },
+        {
+          "titulo": "Remover documentos",
+          "texto": "Para la funcionalidad anterior descrita, existe la opción de eliminar un documento asociado en tal caso que haya una equivocación en el tipo, número o el documento soporte; para ello solo debe seleccionar la opción eliminar (icono Eliminar) del listado de documentos asociados. Recuerde que es necesario asociar todos los documentos solicitados en el listado de tipos de documentos para poder culminar el registro.",
+          "imagen": "img/image-png-9-1u2t.webp"
+        },
+        {
+          "titulo": "Características especiales del registro.",
+          "texto": "-Si la persona natural o jurídica y el responsable del reporte ya se encuentran registrados, el sistema informará esta situación y no permitirá crear un nuevo registro.\n\n-Si la persona natural o jurídica ya está registrada, pero no existe información asociada al responsable del reporte, el sistema vinculará el usuario ingresado a dicho registro.\n\n-Si la persona natural o jurídica no está registrada, pero el responsable del reporte ya existe en SIRE, se creará el registro de la entidad y se asociará el usuario existente como cuenta principal.\n\n-Si ninguno de los datos se encuentra registrado, el sistema creará tanto la entidad como el usuario responsable, vinculándolo como cuenta principal del registro.\n\n-Para finalizar la inscripción, se debe ingresar el código de verificación (captcha) mostrado por el sistema y confirmar el registro."
+        },
+        {
+          "titulo": "Validación final del proceso.",
+          "texto": "En la etapa final del proceso, el sistema solicita ingresar el código de verificación (captcha) mostrado en pantalla para validar la solicitud y garantizar la seguridad de la información registrada. Una vez digitado correctamente, se debe seleccionar la opción Registrar para completar la inscripción en el SIRE.",
+          "imagen": "img/image-png-10-hmjp.webp"
         }
       ]
     }
