@@ -952,6 +952,28 @@
           "imagen": "img/image-png-10-hmjp.webp"
         }
       ]
+    },
+    {
+      "id": "cambios_en_el_contrato_salario_oficios_centro_de_c",
+      "nombre": "Cambios en el contrato- Salario, Oficios, Centro de Costos",
+      "area": "nomina",
+      "resumen": "",
+      "pasos": [
+        {
+          "titulo": "Acceder a SIPE-Vinculaciones",
+          "texto": "Acceso a la vinculación del colaborador\nIngresar a la ruta:\nARCHIVOS > NÓMINA > VINCULACIONES\n\nEn el campo Vinculación empleado, ingresar la cédula del colaborador al que se le realizará la modificación y presionar Enter.\n\nPosteriormente, seleccionar la opción Traer vinculación para cargar la información contractual vigente del colaborador.\n\nPunto de control: verificar que la información cargada corresponda al colaborador que será objeto de la actualización. \n\n"
+        },
+        {
+          "titulo": "Creación del nuevo detalle contractual",
+          "texto": "Seleccionar la opción Nuevo detalle para registrar la modificación correspondiente.\nCompletar los campos requeridos teniendo en cuenta las siguientes consideraciones:\n•\tFecha inicial de valores: registrar el día 1 o 16 del mes correspondiente, de acuerdo con el inicio del período de nómina en el que entrará en vigor el cambio.\n•\tSalario regular origen nuevo detalle: registrar el nuevo salario aprobado para el colaborador.\nUna vez diligenciada la información, presionar la tecla TAB para completar la actualización de los campos relacionados y posteriormente seleccionar Aceptar.\n\nNota: Este nuevo salario debe aparecer en el nuevo campo de Salario Regular original y Salario Básico. Luego de esa verificación le debemos dar en guardar, para que estos cambios queden debidamente registrados.",
+          "imagen": "img/captura-de-pantalla-2026-11-24-120930-aern.webp"
+        },
+        {
+          "titulo": "Validación y almacenamiento de la información",
+          "texto": "Verificar que el nuevo valor registrado se refleje correctamente en los campos:\n•\tSalario Regular Original\n•\tSalario Básico\nPunto de control: confirmar que los valores registrados coincidan con la información aprobada para el colaborador antes de guardar los cambios.\nUna vez validada la información, seleccionar Guardar para registrar definitivamente la modificación en el sistema.\n\n \nLa opción Nuevo detalle también permite realizar modificaciones relacionadas con:\n•\tOficio.\n•\tCentro de Costos.\nEn estos casos, el procedimiento es el mismo; únicamente cambia la información registrada en el campo correspondiente\n",
+          "imagen": "img/image-png-11-yutw.webp"
+        }
+      ]
     }
   ]
 }
