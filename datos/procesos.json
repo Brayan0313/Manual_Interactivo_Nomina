@@ -1032,8 +1032,21 @@
               "valor": "150: auxilio de nacimiento,152: auxilio de matrimonio "
             }
           ]
+        },
+        {
+          "titulo": "Habilitación de conceptos no parametrizados",
+          "texto": "En caso de que al registrar la novedad el sistema presente advertencias relacionadas con conceptos no habilitados para el tipo de empleado, realizar la siguiente configuración:\nIngresar a la ruta:\nARCHIVOS > NÓMINA > CONCEPTOS > CONCEPTOS VÁLIDOS\nCompletar los siguientes campos:\n•\tTipo de empleado: seleccionar mediante F9 la opción correspondiente (ejemplo: Administrativo).\n•\tClase tipo de empleado: seleccionar la opción correspondiente (ejemplo: Directo).\nPosteriormente, registrar el concepto requerido en una de las casillas disponibles.\nVerificar que el concepto quede visible dentro de la configuración y seleccionar Guardar para registrar los cambios.\nPunto de control: confirmar que el concepto haya quedado habilitado antes de regresar al proceso de registro de la novedad.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-24-151652-5jgx.webp"
         }
       ]
+    },
+    {
+      "id": "nuevo_proceso",
+      "nombre": "Nuevo proceso",
+      "area": "nomina",
+      "estado": "borrador",
+      "resumen": "",
+      "pasos": []
     }
   ]
 }
