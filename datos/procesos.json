@@ -2,7 +2,7 @@
   "procesos": [
     {
       "nombre": "Horas Extras Masivo",
-      "resumen": "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPE",
+      "resumen": "Desde la consolidación de horas laboradas hasta el cargue y validación en SIPE.",
       "pasos": [
         {
           "titulo": "Descargar archivos",
@@ -106,7 +106,7 @@
     },
     {
       "nombre": "Productividad CEDI",
-      "resumen": "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPEC.",
+      "resumen": "Desde la recepción del archivo del CEDI hasta la validación del cargue en SIPE.",
       "pasos": [
         {
           "titulo": "Preparar archivo de trabajo",
