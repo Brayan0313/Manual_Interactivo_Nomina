@@ -1067,6 +1067,12 @@
               "nombre": "concepto",
               "valor": "050"
             }
+          ],
+          "notas": [
+            {
+              "tipo": "importante",
+              "texto": "Configurar el campo Liquidación Fórmula con la opción Sí, con el fin de permitir que la novedad sea recalculada automáticamente cuando el colaborador presente novedades que afecten la liquidación, tales como:\n•\tVacaciones.\n•\tPermisos no remunerados.\n•\tIncapacidades.\n•\tOtras novedades que impacten el cálculo de nómina.\n"
+            }
           ]
         }
       ]
