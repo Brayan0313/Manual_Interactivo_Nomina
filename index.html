@@ -49,6 +49,11 @@
     background: var(--tarjeta); color: var(--suave); border: 1.5px solid var(--linea); border-radius: 999px; padding: 5px 12px; }
   .btn-admin:hover { color: var(--titulo); border-color: var(--acento); }
   .etq-b { font-size: .7rem; font-weight: 700; background: #6b7280; color: #fff; border-radius: 5px; padding: 1px 7px; vertical-align: middle; }
+  [hidden] { display: none !important; }
+  .frag { display: block; margin-top: 5px; font-size: .88rem; color: var(--texto); }
+  .frag b { color: var(--rojo); }
+  mark { background: #ffe38a; color: #1a2433; border-radius: 3px; padding: 0 2px; }
+  .etq-a { font-size: .72rem; font-weight: 600; background: var(--linea); color: var(--suave); border-radius: 5px; padding: 1px 7px; vertical-align: middle; }
   .pie { margin-top: 36px; text-align: center; }
   .pie button { background: none; border: 0; color: var(--suave); font: inherit; font-size: .85rem; cursor: pointer; text-decoration: underline; }
 
@@ -187,26 +192,80 @@ function pintarPaso(paso) {
   const media = imagen ? `<img class="imagen" src="${limpiar(srcImg(imagen))}" alt="Captura del paso">` : "";
   return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
 }
+/* ===== BÚSQUEDA: por nombre y por palabras dentro de los pasos (incluye el texto de los pasos comunes) ===== */
+const textoPlano = (t, params = {}) => String(t ?? "").replace(/\{(\w+)\}/g, (_, k) => k in params ? params[k] : "");
+function piezasProceso(p) {
+  const piezas = [{ donde: "", texto: p.nombre }, { donde: "", texto: p.resumen || "" }];
+  p.pasos.forEach((s, i) => {
+    const b = s.bloque ? BLOQUES[s.bloque] : s; if (!b) return;
+    piezas.push({ donde: "Paso " + (i + 1), texto: textoPlano(b.titulo, s.params) + ". " + textoPlano(b.texto, s.params) });
+  });
+  return piezas;
+}
+function buscarProcesos(q, areaId) {
+  const tokens = normaliza(q).split(/\s+/).filter(Boolean); if (!tokens.length) return { tokens, res: [] };
+  const res = [];
+  PROCESOS.filter(p => !areaId || areaDe(p) === areaId).forEach(p => {
+    const piezas = piezasProceso(p);
+    if (!tokens.every(t => normaliza(piezas.map(x => x.texto).join(" ")).includes(t))) return;   // todas las palabras, en cualquier orden
+    const enNombre = tokens.every(t => normaliza(p.nombre).includes(t));
+    let frag = null;
+    for (const pz of piezas.slice(2)) { const n = normaliza(pz.texto), t = tokens.find(t => n.includes(t)); if (t) { frag = { donde: pz.donde, texto: pz.texto, i: n.indexOf(t) }; break; } }
+    res.push({ p, enNombre, frag });
+  });
+  res.sort((a, b) => b.enNombre - a.enNombre);
+  return { tokens, res };
+}
+function fragmentoHtml(frag, tokens) {
+  const ini = Math.max(0, frag.i - 45), fin = Math.min(frag.texto.length, frag.i + 95), s = frag.texto.slice(ini, fin), ns = normaliza(s);
+  const marcas = [];
+  if (ns.length === s.length) tokens.forEach(tk => { let i = ns.indexOf(tk); while (i >= 0) { marcas.push([i, i + tk.length]); i = ns.indexOf(tk, i + tk.length); } });
+  marcas.sort((a, b) => a[0] - b[0]);
+  let out = "", pos = 0;
+  for (const [a, b] of marcas) { if (b <= pos) continue; const desde = Math.max(a, pos); out += limpiar(s.slice(pos, desde)) + "<mark>" + limpiar(s.slice(desde, b)) + "</mark>"; pos = b; }
+  return (ini > 0 ? "…" : "") + out + limpiar(s.slice(pos)) + (fin < frag.texto.length ? "…" : "");
+}
+function tarjetaResultado(r, tokens, conArea) {
+  const padre = r.p.padre && PROCESOS.find(x => x.id === r.p.padre);
+  return `<button class="proceso" data-id="${limpiar(r.p.id)}"><strong>${limpiar(r.p.nombre)}${tagB(r.p)}` +
+    (conArea ? ` <span class="etq-a">${limpiar(nombreArea(areaDe(r.p)))}</span>` : "") +
+    (padre ? ` <span class="etq-a">Subproceso de ${limpiar(padre.nombre)}</span>` : "") + `</strong>` +
+    `<span>${limpiar(r.p.resumen)}</span>` +
+    (r.frag ? `<span class="frag"><b>${limpiar(r.frag.donde)}:</b> ${fragmentoHtml(r.frag, tokens)}</span>` : "") + `</button>`;
+}
+function pintarResultados(caja, q, areaId, conArea) {
+  const { tokens, res } = buscarProcesos(q, areaId);
+  caja.innerHTML = res.length
+    ? `<p class="sub" style="margin:0 0 4px">${res.length} ${res.length === 1 ? "resultado" : "resultados"}</p>` + res.map(r => tarjetaResultado(r, tokens, conArea)).join("")
+    : '<p class="vacio">No encontramos nada con esas palabras. Prueba con otras o con menos palabras.</p>';
+}
 function verAreas() {
   app.innerHTML = `<h1>Manual de procesos</h1><p class="sub">¿De qué área es el proceso?</p>
-    <div class="areas">${AREAS.map(a => { const n = PROCESOS.filter(p => !p.padre && areaDe(p) === a.id).length;
+    <input id="buscador" type="search" placeholder="Buscar en todos los procesos: por nombre o por una palabra de los pasos" aria-label="Buscar">
+    <div class="lista" id="resultados" hidden></div>
+    <div class="areas" id="areas">${AREAS.map(a => { const n = PROCESOS.filter(p => !p.padre && areaDe(p) === a.id).length;
       return `<button class="area" data-area="${a.id}"><strong>${limpiar(a.nombre)}</strong><span>${n} ${n === 1 ? "proceso" : "procesos"}</span></button>`; }).join("")}</div>`;
-  app.querySelector(".areas").addEventListener("click", e => { const b = e.target.closest("button[data-area]"); if (b) location.hash = "/" + b.dataset.area; });
+  const buscador = document.getElementById("buscador"), res = document.getElementById("resultados"), areas = document.getElementById("areas");
+  areas.addEventListener("click", e => { const b = e.target.closest("button[data-area]"); if (b) location.hash = "/" + b.dataset.area; });
+  res.addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) location.hash = b.dataset.id; });
+  buscador.addEventListener("input", () => {
+    const hay = buscador.value.trim() !== ""; res.hidden = !hay; areas.hidden = hay;
+    if (hay) pintarResultados(res, buscador.value, null, true);
+  });
 }
 function verMenu(area) {
   app.innerHTML = `<button class="volver" id="todas">‹ Todas las áreas</button>
     <h1>${limpiar(area.nombre)}</h1><p class="sub">¿De qué proceso quieres saber?</p>
-    <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra" aria-label="Buscar">
+    <input id="buscador" type="search" placeholder="Buscar un proceso o una palabra de sus pasos" aria-label="Buscar">
     <div class="lista" id="lista"></div>`;
   const lista = document.getElementById("lista"), buscador = document.getElementById("buscador");
   document.getElementById("todas").onclick = () => { location.hash = ""; };
   function filtrar() {
-    const q = buscador.value.toLowerCase();
+    if (buscador.value.trim()) return pintarResultados(lista, buscador.value, area.id, false);
     const propios = PROCESOS.filter(p => !p.padre && areaDe(p) === area.id);
-    const hallados = propios.filter(p => (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
-    lista.innerHTML = hallados.length
-      ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}"><strong>${limpiar(p.nombre)}${tagB(p)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
-      : propios.length ? '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>' : '<p class="vacio">Aún no hay procesos en esta área.</p>';
+    lista.innerHTML = propios.length
+      ? propios.map(p => `<button class="proceso" data-id="${limpiar(p.id)}"><strong>${limpiar(p.nombre)}${tagB(p)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
+      : '<p class="vacio">Aún no hay procesos en esta área.</p>';
   }
   buscador.addEventListener("input", filtrar);
   lista.addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) location.hash = b.dataset.id; });
