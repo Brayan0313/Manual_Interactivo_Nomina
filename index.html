@@ -111,11 +111,15 @@
   .ed code { background:#e7ecf6; color:#14275a; padding:1px 5px; border-radius:4px; }
   .ed main, main.ed { padding-bottom:120px; }
   .ed .est { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; display: inline-block; vertical-align: middle; }
-  .ed .e-publicado { background: #e3f4e9; color: #12552a; }
+  .ed .e-publicado { background: #1b7a3d; color: #fff !important; }
   .ed .e-cambios { background: #fff4d6; color: #6b4600; }
   .ed .e-nuevo { background: #e0ebff; color: #14275a; }
-  .ed .e-borrador { background: #e6e8ec; color: #3b4352; }
+  .ed .e-borrador { background: #6b7280; color: #fff !important; }
   .ed .chip { font: inherit; font-size: .85rem; cursor: pointer; background: var(--tarjeta); color: var(--texto); border: 1.5px solid var(--linea); border-radius: 999px; padding: 4px 12px; }
+  .ed .chip.c-publicado { background: #e3f4e9; color: #12552a; border-color: #1b7a3d; font-weight: 600; }
+  .ed .chip.c-publicado.activa { background: #1b7a3d; color: #fff; }
+  .ed .chip.c-borrador { background: #eceef1; color: #3b4352; border-color: #6b7280; font-weight: 600; }
+  .ed .chip.c-borrador.activa { background: #6b7280; color: #fff; }
   .ed .chip.activa { background: var(--acento); color: #fff; border-color: var(--acento); }
 </style>
 </head>
@@ -666,18 +670,8 @@ function controlImagen(obj) {
 /* ===== Estado de cada proceso/bloque: ¿publicado, con cambios, nuevo o en borrador? ===== */
 let busquedaEd = "", busquedaBl = "", filtroEstado = "todos";
 const normaliza = t => String(t ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-function estadoProceso(p) {
-  const orig = PUB.procesos.find(x => x.id === p.id);
-  if (p.estado === "borrador")
-    return { k: "borrador", txt: orig && orig.estado !== "borrador" ? "Borrador · se ocultará al publicar" : "Borrador · oculto a los lectores" };
-  if (!orig) return { k: "nuevo", txt: "Nuevo · sin publicar" };
-  if (orig.estado === "borrador") return { k: "nuevo", txt: "Se publicará por primera vez" };
-  return canon(orig) !== canon(p) ? { k: "cambios", txt: "Publicado · con cambios sin publicar" } : { k: "publicado", txt: "Publicado" };
-}
-function estadoBloque(b) {
-  const orig = PUB.bloques.find(x => x.id === b.id);
-  if (!orig) return { k: "nuevo", txt: "Nuevo · sin publicar" };
-  return canon(orig) !== canon(b) ? { k: "cambios", txt: "Publicado · con cambios sin publicar" } : { k: "publicado", txt: "Publicado" };
+function estadoProceso(p) {   // solo dos estados, para que sea fácil de entender
+  return p.estado === "borrador" ? { k: "borrador", txt: "Borrador" } : { k: "publicado", txt: "Publicado" };
 }
 /* replaceChildren escribe «null» si recibe null y no abre listas: este ayudante las limpia */
 const reponer = (el, ...hijos) => el.replaceChildren(...hijos.flat(Infinity).filter(x => x != null && x !== false));
@@ -707,8 +701,8 @@ function vistaProcesos(el) {
       .filter(p => !q || normaliza(p.nombre + " " + (p.resumen || "") + " " + p.pasos.map(s => (s.titulo || "") + " " + (s.texto || "")).join(" ")).includes(q));
     const est = new Map(base.map(p => [p, estadoProceso(p)]));
     const cuenta = k => k === "todos" ? base.length : base.filter(p => est.get(p).k === k).length;
-    chips.replaceChildren(...[["todos", "Todos"], ["publicado", "Publicados"], ["cambios", "Con cambios"], ["nuevo", "Nuevos"], ["borrador", "En borrador"]].map(([k, t]) =>
-      h("button", { class: "chip" + (filtroEstado === k ? " activa" : ""), onclick: () => { filtroEstado = k; dibujar(); } }, `${t} (${cuenta(k)})`)));
+    chips.replaceChildren(...[["todos", "Todos"], ["publicado", "Publicados"], ["borrador", "En borrador"]].map(([k, t]) =>
+      h("button", { class: "chip c-" + k + (filtroEstado === k ? " activa" : ""), onclick: () => { filtroEstado = k; dibujar(); } }, `${t} (${cuenta(k)})`)));
     const jerarquia = !q && filtroEstado === "todos";
     let filas = [];
     if (jerarquia) {
@@ -825,7 +819,7 @@ function vistaBloques(el) {
       !lista.length ? h("p", { class: "nota" }, q ? "No hay pasos comunes que coincidan con la búsqueda." : "Aún no hay pasos comunes en esta área.") : null,
       lista.map((b, i) => h("div", { class: "item" },
         h("div", { class: "txt", onclick: () => { areaEd = areaDe(b); selBloque = b.id; pintarEditor(); } },
-          h("strong", {}, b.titulo, " ", insignia(estadoBloque(b)), " ", q ? h("span", { class: "etq" }, nombreArea(areaDe(b))) : null), h("span", {}, `Usado ${usosBloque(b.id)} veces`)),
+          h("strong", {}, b.titulo, " ", q ? h("span", { class: "etq" }, nombreArea(areaDe(b))) : null), h("span", {}, `Usado ${usosBloque(b.id)} veces`)),
         !q ? [h("button", { class: "b mini", disabled: i === 0, onclick: () => moverEn(b, -1) }, "↑"), h("button", { class: "b mini", disabled: i === lista.length - 1, onclick: () => moverEn(b, 1) }, "↓")] : null)));
   }
   dibujar();
