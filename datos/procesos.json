@@ -974,6 +974,43 @@
           "imagen": "img/image-png-11-yutw.webp"
         }
       ]
+    },
+    {
+      "id": "inscripcion_de_cuentas_bancolombia",
+      "nombre": "Inscripción de Cuentas Bancolombia ",
+      "area": "nomina",
+      "resumen": "",
+      "pasos": [
+        {
+          "titulo": "1. Recepción de información",
+          "texto": "Recibir el correo electrónico correspondiente a los nuevos ingresos del período. Ubicar los archivos de contratación de los colaboradores e identificar la siguiente información:\n-\tNúmero de cuenta bancaria.\n-\tNombre del titular de la cuenta.\n"
+        },
+        {
+          "titulo": "Diligenciamiento del archivo de inscripción",
+          "texto": "Abrir el archivo FORMATO INSCRIPCIÓN PRODUCTO.\nRegistrar la información de los nuevos colaboradores en las columnas correspondientes, incluyendo:\n•\tNúmero de cuenta.\n•\tNombre del titular.\nPunto de control: verificar que los números de cuenta y los nombres registrados coincidan con la documentación entregada por el colaborador.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-24-142322-oy70.webp"
+        },
+        {
+          "titulo": "Generación del archivo de inscripción",
+          "texto": "Ingresar a la siguiente página:\nsatbancolombia.com/conversores#!/inscripción-cuentas\nSeleccionar la opción Cargar archivo y cargar el archivo FORMATO INSCRIPCIÓN PRODUCTO previamente diligenciado.\nUna vez procesada la información, verificar que las cuentas aparezcan correctamente en la ventana de validación.\nPosteriormente, seleccionar la opción Generar Archivo.\nEl sistema descargará automáticamente un archivo denominado InscripcionCuentas, el cual será utilizado para la inscripción masiva en Bancolombia.\nPunto de control: verificar que el archivo InscripcionCuentas haya sido generado correctamente antes de continuar.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-24-142420-drqj.webp"
+        },
+        {
+          "titulo": "Acceso a Sucursal Virtual Negocios",
+          "texto": "Ingresar a www.bancolombia.com.\nSeleccionar la opción Sucursal Virtual Negocios e iniciar sesión con las credenciales autorizadas para la compañía.\n",
+          "imagen": "img/image-png-12-5p0j.webp"
+        },
+        {
+          "titulo": "Carga del lote de inscripción",
+          "texto": "Acceder a la opción de Inscripción en lote dentro del menú de transacciones.\nCompletar la información solicitada:\n•\tNombre del lote: utilizar un nombre que permita identificar el proceso realizado.\nEjemplo:\no\tINGRESOSQ1NOVIEMBRE\no\tINGRESOSQ2NOVIEMBRE\n•\tTipo de transacción: Inscripción.\n•\tTipo de archivo: Archivo plano.\n•\tArchivo: seleccionar el archivo InscripcionCuentas generado anteriormente.\nUna vez diligenciada la información, continuar con el proceso de carga.\nPunto de control: verificar que el archivo seleccionado corresponda al lote de ingresos que se está procesando.\n",
+          "imagen": "img/image-png-13-opqz.webp"
+        },
+        {
+          "titulo": "Validación y aprobación",
+          "texto": "Al finalizar la carga, el sistema generará un comprobante de la operación.\nSeleccionar la opción Ir a aprobaciones para consultar las transacciones pendientes de aprobación y realizar el seguimiento correspondiente hasta su procesamiento definitivo.\nPunto de control: verificar que el lote cargado se encuentre disponible en la bandeja de aprobaciones y no presente errores de validación.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-24-144718-xdv2.webp"
+        }
+      ]
     }
   ]
 }
