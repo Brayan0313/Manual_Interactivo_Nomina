@@ -1075,6 +1075,61 @@
           ]
         }
       ]
+    },
+    {
+      "id": "registro_incapacidades",
+      "nombre": "Registro incapacidades",
+      "area": "nomina",
+      "estado": "borrador",
+      "resumen": ": Este proceso tiene como objetivo registrar en SIPE las incapacidades reportadas por los colaboradores, garantizando que la información registrada coincida con los soportes médicos recibidos y que la novedad quede correctamente aplicada en nómina.",
+      "pasos": [
+        {
+          "titulo": "Revisión de soportes de incapacidad",
+          "texto": "Acceder a la carpeta compartida de incapacidades e ingresar a la carpeta correspondiente al mes y día que se requiere procesar.\nAbrir cada incapacidad individualmente y validar la información contenida en el soporte médico.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: verificar que el documento permita identificar como mínimo la cédula del colaborador, las fechas de incapacidad, la cantidad de días y la entidad emisora del documento."
+            }
+          ],
+          "imagen": "img/image-png-14-btql.webp"
+        },
+        {
+          "titulo": "Acceso al módulo de incapacidades",
+          "texto": "Ingresar a SIPE y acceder a la siguiente ruta:\nTRANSACCIONES > NOVEDADES > INCAPACIDADES\nSe abrirá el módulo de registro de incapacidades, donde se deberá diligenciar la información contenida en el soporte recibido.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-25-092122-gqst.webp"
+        },
+        {
+          "titulo": "Registro de la incapacidad",
+          "texto": "Ingresar la cédula del colaborador y seleccionar la opción correspondiente según el caso:\n•\tCrear incapacidad: cuando la incapacidad se registra por primera vez en el sistema.\n•\tTraer incapacidad: cuando se requiere consultar o actualizar una incapacidad previamente registrada.\nCompletar todos los campos requeridos utilizando la información del documento de incapacidad.",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Verificar que las fechas, cantidad de días y demás datos registrados coincidan con la información contenida en el soporte médico."
+            }
+          ]
+        },
+        {
+          "titulo": "Validación de períodos de nómina",
+          "texto": "Antes de registrar la fecha inicial de la incapacidad, validar el período de nómina en el que se encuentra la compañía.",
+          "notas": [
+            {
+              "tipo": "importante",
+              "texto": "Si la incapacidad corresponde a una fecha que pertenece a un período de nómina ya cerrado, se deberá registrar en el campo Fecha inicial una fecha que se encuentre dentro del período de nómina actualmente habilitado.\nPosteriormente, actualizar el campo Fecha inicial real con la fecha efectiva de inicio de la incapacidad reportada en el soporte médico.\n"
+            }
+          ]
+        },
+        {
+          "titulo": "Confirmación del registro",
+          "texto": "Una vez validada toda la información, guardar la novedad para dejar la incapacidad registrada en el sistema.",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Confirmar que la incapacidad haya quedado almacenada correctamente y que pueda ser consultada posteriormente en el módulo de incapacidades."
+            }
+          ]
+        }
+      ]
     }
   ]
 }
