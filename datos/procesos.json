@@ -959,7 +959,7 @@
       "id": "cambios_en_el_contrato_salario_oficios_centro_de_c",
       "nombre": "Cambios en el contrato- Salario, Oficios, Centro de Costos",
       "area": "nomina",
-      "resumen": "",
+      "resumen": "Este proceso tiene como objetivo actualizar en SIPEC la información contractual de los colaboradores cuando se presentan cambios de salario, oficio o centro de costos, garantizando que la información quede registrada correctamente para los procesos de nómina posteriores.",
       "pasos": [
         {
           "titulo": "Acceder a SIPE-Vinculaciones",
@@ -981,7 +981,7 @@
       "id": "inscripcion_de_cuentas_bancolombia",
       "nombre": "Inscripción de Cuentas Bancolombia ",
       "area": "nomina",
-      "resumen": "",
+      "resumen": "Este proceso tiene como objetivo registrar e inscribir masivamente las cuentas bancarias de los nuevos colaboradores en la plataforma de Bancolombia, garantizando que las cuentas queden habilitadas para la realización de pagos y transferencias empresariales.",
       "pasos": [
         {
           "titulo": "1. Recepción de información",
@@ -1018,7 +1018,7 @@
       "id": "ingreso_de_novedades_beneficios_extralegales",
       "nombre": "Ingreso de novedades- beneficios extralegales",
       "area": "nomina",
-      "resumen": "",
+      "resumen": "Este proceso tiene como objetivo registrar en SIPEC los beneficios extralegales otorgados a los colaboradores, garantizando la correcta aplicación de la novedad en nómina según el concepto asignado para cada beneficio.",
       "pasos": [
         {
           "titulo": "Recepción de la información",
