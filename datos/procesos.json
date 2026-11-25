@@ -1011,6 +1011,27 @@
           "imagen": "img/captura-de-pantalla-2026-11-24-144718-xdv2.webp"
         }
       ]
+    },
+    {
+      "id": "ingreso_de_novedades_beneficios_extralegales",
+      "nombre": "Ingreso de novedades- beneficios extralegales",
+      "area": "nomina",
+      "resumen": "",
+      "pasos": [
+        {
+          "titulo": "Recepción de la información",
+          "texto": "Recibir el correo electrónico de nuevos ingresos o beneficios extralegales.\nEn el archivo recibido se encuentra la relación de colaboradores beneficiados junto con el valor correspondiente y el concepto a registrar.\n\nPunto de control: verificar que el archivo contenga el nombre del colaborador, el valor del beneficio y el concepto correspondiente antes de iniciar el registro."
+        },
+        {
+          "bloque": "registroManualSIPE",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "150: auxilio de nacimiento,152: auxilio de matrimonio "
+            }
+          ]
+        }
+      ]
     }
   ]
 }
