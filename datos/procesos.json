@@ -1044,7 +1044,6 @@
       "id": "nuevo_proceso",
       "nombre": "Horas Extras Pactadas Carguesa",
       "area": "nomina",
-      "estado": "borrador",
       "resumen": "Este proceso tiene como objetivo registrar en SIPE las novedades correspondientes a Horas Extras Pactadas para los colaboradores que cuentan con este beneficio, garantizando el cálculo proporcional cuando el colaborador no haya laborado la totalidad del período de nómina. Este beneficio aplica únicamente para los conductores de Carguesa.",
       "pasos": [
         {
