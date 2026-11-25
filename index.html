@@ -50,6 +50,14 @@
   .btn-admin:hover { color: var(--titulo); border-color: var(--acento); }
   .etq-b { font-size: .7rem; font-weight: 700; background: #6b7280; color: #fff; border-radius: 5px; padding: 1px 7px; vertical-align: middle; }
   [hidden] { display: none !important; }
+  .aviso { margin-top: 10px; padding: 9px 12px; border-radius: 8px; border-left: 4px solid; font-size: .95rem; white-space: pre-line; }
+  .aviso b { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+  .aviso-acl { background: #e8eefb; border-color: #14275a; color: #14275a; }
+  .aviso-imp { background: #fdecee; border-color: #c8102e; color: #7a0b1f; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .aviso-acl { background: #1c2a4d; border-color: #6f8fe0; color: #dbe5ff; }
+    :root:not([data-theme="light"]) .aviso-imp { background: #3a1620; border-color: #ff5c72; color: #ffd0d6; }
+  }
   .frag { display: block; margin-top: 5px; font-size: .88rem; color: var(--texto); }
   .frag b { color: var(--rojo); }
   mark { background: #ffe38a; color: #1a2433; border-radius: 3px; padding: 0 2px; }
@@ -121,6 +129,9 @@
   .ed .chip.c-borrador { background: #eceef1; color: #3b4352; border-color: #6b7280; font-weight: 600; }
   .ed .chip.c-borrador.activa { background: #6b7280; color: #fff; }
   .ed .chip.activa { background: var(--acento); color: #fff; border-color: var(--acento); }
+  .ed .nota-ed { border-left: 4px solid; border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+  .ed .nota-ed-acl { background: #e8eefb; border-color: #14275a; }
+  .ed .nota-ed-imp { background: #fdecee; border-color: #c8102e; }
 </style>
 </head>
 <body>
@@ -194,7 +205,9 @@ function pintarPaso(paso) {
     titulo = rellenar(paso.titulo, paso.params); texto = rellenar(paso.texto, paso.params); imagen = paso.imagen || "";
   }
   const media = imagen ? `<img class="imagen" src="${limpiar(srcImg(imagen))}" alt="Captura del paso">` : "";
-  return `<li><h3>${titulo}</h3><p>${texto}</p>${media}${etiqueta}</li>`;
+  const notas = [...(paso.bloque ? (BLOQUES[paso.bloque]?.notas || []) : []), ...(paso.notas || [])]   // primero las del bloque, luego las propias de este proceso
+    .map(n => `<div class="aviso ${n.tipo === "importante" ? "aviso-imp" : "aviso-acl"}"><b>${n.tipo === "importante" ? "Importante" : "Nota"}</b>${rellenar(n.texto, paso.params)}</div>`).join("");
+  return `<li><h3>${titulo}</h3><p>${texto}</p>${notas}${media}${etiqueta}</li>`;
 }
 /* ===== BÚSQUEDA: por nombre y por palabras dentro de los pasos (incluye el texto de los pasos comunes) ===== */
 const textoPlano = (t, params = {}) => String(t ?? "").replace(/\{(\w+)\}/g, (_, k) => k in params ? params[k] : "");
@@ -202,7 +215,7 @@ function piezasProceso(p) {
   const piezas = [{ donde: "", texto: p.nombre }, { donde: "", texto: p.resumen || "" }];
   p.pasos.forEach((s, i) => {
     const b = s.bloque ? BLOQUES[s.bloque] : s; if (!b) return;
-    piezas.push({ donde: "Paso " + (i + 1), texto: textoPlano(b.titulo, s.params) + ". " + textoPlano(b.texto, s.params) });
+    piezas.push({ donde: "Paso " + (i + 1), texto: textoPlano(b.titulo, s.params) + ". " + textoPlano(b.texto, s.params) + [...(b.notas || []), ...(s.bloque ? s.notas || [] : [])].map(n => ". " + textoPlano(n.texto, s.params)).join("") });
   });
   return piezas;
 }
@@ -392,6 +405,7 @@ function validar(d) {
     idsB.add(b.id);
     if (!String(b.titulo || "").trim()) errores.push(`${et}: falta el título.`);
     if (!String(b.texto || "").trim()) errores.push(`${et}: falta el texto.`);
+    (b.notas || []).forEach((n, j) => { if (!String(n.texto || "").trim()) errores.push(`${et}: la nota ${j + 1} está vacía (escribe algo o quítala).`); });
   });
   d.procesos.forEach((p, i) => {
     const et = `Proceso ${i + 1}${p.id ? " (" + p.id + ")" : ""}`;
@@ -405,6 +419,7 @@ function validar(d) {
     if (!p.pasos.length && !enBorrador) avisos.push(`${et}: no tiene pasos.`);
     p.pasos.forEach((s, j) => {
       const ep = `${et}, paso ${j + 1}`;
+      (s.notas || []).forEach((n, k) => { if (!String(n.texto || "").trim()) dest.push(`${pre}${ep}: la nota ${k + 1} está vacía (escribe algo o quítala).`); });
       if ("bloque" in s) {
         const b = d.bloques.find(x => x.id === s.bloque);
         if (!b) dest.push(`${pre}${ep}: usa el bloque "${s.bloque}" que no existe.`);
@@ -641,6 +656,23 @@ function vistaSeguridad(el) {
 }
 
 /* ----- imagen: ruta escrita (las imágenes se suben a la carpeta img del repositorio) ----- */
+function controlNotas(obj) {
+  const caja = h("div", {});
+  const dibujar = () => {
+    reponer(caja, h("label", {}, "Notas y aclaraciones (opcional)"),
+      (obj.notas || []).map((n, i) => {
+        const ta = h("textarea", { style: "min-height:64px", placeholder: "Escribe la aclaración o lo importante que se debe tener en cuenta", oninput: e => { n.texto = e.target.value; marcarSucio(); } }); ta.value = n.texto || "";
+        return h("div", { class: "nota-ed " + (n.tipo === "importante" ? "nota-ed-imp" : "nota-ed-acl") },
+          h("div", { class: "fila", style: "margin-bottom:6px" },
+            h("select", { value: n.tipo === "importante" ? "importante" : "aclaracion", style: "width:auto", onchange: e => { n.tipo = e.target.value; marcarSucio(); dibujar(); } },
+              h("option", { value: "aclaracion" }, "Nota / aclaración"), h("option", { value: "importante" }, "Importante")),
+            h("span", { class: "crece" }),
+            h("button", { class: "b mini pel", onclick: () => { obj.notas.splice(i, 1); if (!obj.notas.length) delete obj.notas; marcarSucio(); dibujar(); } }, "Quitar nota")), ta);
+      }),
+      h("p", {}, h("button", { class: "b mini", onclick: () => { (obj.notas = obj.notas || []).push({ tipo: "aclaracion", texto: "" }); marcarSucio(); dibujar(); } }, "+ Agregar nota")));
+  };
+  dibujar(); return caja;
+}
 function controlImagen(obj) {
   const caja = h("div", {});
   const dibujar = () => {
@@ -698,7 +730,7 @@ function vistaProcesos(el) {
   function dibujar() {
     const q = normaliza(busquedaEd);
     const base = (q ? D.procesos : D.procesos.filter(x => areaDe(x) === areaEd))
-      .filter(p => !q || normaliza(p.nombre + " " + (p.resumen || "") + " " + p.pasos.map(s => (s.titulo || "") + " " + (s.texto || "")).join(" ")).includes(q));
+      .filter(p => !q || normaliza(p.nombre + " " + (p.resumen || "") + " " + p.pasos.map(s => (s.titulo || "") + " " + (s.texto || "") + " " + (s.notas || []).map(n => n.texto).join(" ")).join(" ")).includes(q));
     const est = new Map(base.map(p => [p, estadoProceso(p)]));
     const cuenta = k => k === "todos" ? base.length : base.filter(p => est.get(p).k === k).length;
     chips.replaceChildren(...[["todos", "Todos"], ["publicado", "Publicados"], ["borrador", "En borrador"]].map(([k, t]) =>
@@ -769,10 +801,10 @@ function tarjetaPaso(p, s, i) {
   if (!esBloque) {
     const ta = h("textarea", { oninput: e => { s.texto = e.target.value; marcarSucio(); } }); ta.value = s.texto || "";
     caja.append(h("label", {}, "Título del paso"), h("input", { value: s.titulo || "", oninput: e => { s.titulo = e.target.value; marcarSucio(); } }),
-      h("label", {}, "Instrucciones"), ta, h("p", { class: "nota" }, "Cada Enter es un salto de línea."), controlImagen(s),
+      h("label", {}, "Instrucciones"), ta, h("p", { class: "nota" }, "Cada Enter es un salto de línea."), controlNotas(s), controlImagen(s),
       h("p", {}, h("button", { class: "b mini", onclick: () => {
         if (!confirm("¿Convertir en paso común? Se perderá el texto de este paso.")) return;
-        const img = s.imagen; Object.keys(s).forEach(k => delete s[k]); s.bloque = D.bloques.find(b => areaDe(b) === areaDe(p))?.id || ""; s.params = []; if (img) s.imagen = img; marcarSucio(); pintarEditor();
+        const img = s.imagen, notas = s.notas; Object.keys(s).forEach(k => delete s[k]); if (notas) s.notas = notas; s.bloque = D.bloques.find(b => areaDe(b) === areaDe(p))?.id || ""; s.params = []; if (img) s.imagen = img; marcarSucio(); pintarEditor();
       } }, "Cambiar a paso común")));
   } else {
     const b = D.bloques.find(x => x.id === s.bloque);
@@ -790,10 +822,10 @@ function tarjetaPaso(p, s, i) {
         } })));
       if (!nec.length) caja.append(h("p", { class: "nota" }, "Este bloque no tiene valores variables."));
     }
-    caja.append(controlImagen(s), h("p", {}, h("button", { class: "b mini", onclick: () => {
+    caja.append(controlNotas(s), controlImagen(s), h("p", {}, h("button", { class: "b mini", onclick: () => {
       const b2 = D.bloques.find(x => x.id === s.bloque), rep = t => t.replace(/\{(\w+)\}/g, (_, n) => s.params.find(x => x.nombre === n)?.valor ?? `{${n}}`);
-      const img = s.imagen, titulo = b2 ? rep(b2.titulo) : "", texto = b2 ? rep(b2.texto) : "";
-      Object.keys(s).forEach(k => delete s[k]); s.titulo = titulo; s.texto = texto; if (img) s.imagen = img; marcarSucio(); pintarEditor();
+      const img = s.imagen, titulo = b2 ? rep(b2.titulo) : "", texto = b2 ? rep(b2.texto) : "", notas = [...(b2?.notas || []), ...(s.notas || [])].map(n => ({ ...n, texto: rep(n.texto) }));
+      Object.keys(s).forEach(k => delete s[k]); s.titulo = titulo; s.texto = texto; if (notas.length) s.notas = notas; if (img) s.imagen = img; marcarSucio(); pintarEditor();
     } }, "Convertir en paso propio (copia el texto)")));
   }
   return caja;
@@ -832,7 +864,7 @@ function editorBloque(el, b) {
       h("label", {}, "Título del paso"), h("input", { value: b.titulo, oninput: e => { b.titulo = e.target.value; autoIdBloque(b); const c = document.getElementById("idint"); if (c) c.textContent = b.id; marcarSucio(); } }),
       h("label", {}, "Instrucciones"), ta,
       h("p", { class: "nota" }, "Para valores que cambian en cada proceso escribe el nombre entre llaves, por ejemplo ", h("code", {}, "{archivo}"), ". Cada proceso que use el bloque indicará el valor."),
-      controlImagen(b), h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, b.id))),
+      controlNotas(b), controlImagen(b), h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, b.id))),
     h("h3", {}, "Procesos que usan este bloque"), usos.length ? h("ul", {}, usos.map(p => h("li", {}, p.nombre))) : h("p", { class: "nota" }, "Ninguno todavía."),
     h("hr", { style: "margin:26px 0 14px;border:0;border-top:1px solid var(--linea)" }),
     h("button", { class: "b pel", onclick: () => {
