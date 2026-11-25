@@ -48,6 +48,7 @@
   .btn-admin { position: fixed; top: 14px; right: 14px; z-index: 20; font: inherit; font-size: .82rem; cursor: pointer;
     background: var(--tarjeta); color: var(--suave); border: 1.5px solid var(--linea); border-radius: 999px; padding: 5px 12px; }
   .btn-admin:hover { color: var(--titulo); border-color: var(--acento); }
+  .etq-b { font-size: .7rem; font-weight: 700; background: #6b7280; color: #fff; border-radius: 5px; padding: 1px 7px; vertical-align: middle; }
   .pie { margin-top: 36px; text-align: center; }
   .pie button { background: none; border: 0; color: var(--suave); font: inherit; font-size: .85rem; cursor: pointer; text-decoration: underline; }
 
@@ -104,6 +105,13 @@
   .ed .estado.sucio { color:var(--rojo); }
   .ed code { background:#e7ecf6; color:#14275a; padding:1px 5px; border-radius:4px; }
   .ed main, main.ed { padding-bottom:120px; }
+  .ed .est { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; display: inline-block; vertical-align: middle; }
+  .ed .e-publicado { background: #e3f4e9; color: #12552a; }
+  .ed .e-cambios { background: #fff4d6; color: #6b4600; }
+  .ed .e-nuevo { background: #e0ebff; color: #14275a; }
+  .ed .e-borrador { background: #e6e8ec; color: #3b4352; }
+  .ed .chip { font: inherit; font-size: .85rem; cursor: pointer; background: var(--tarjeta); color: var(--texto); border: 1.5px solid var(--linea); border-radius: 999px; padding: 4px 12px; }
+  .ed .chip.activa { background: var(--acento); color: #fff; border-color: var(--acento); }
 </style>
 </head>
 <body>
@@ -131,10 +139,16 @@ function rellenar(plantilla, params = {}) {
   return limpiar(plantilla).replace(/\{(\w+)\}/g, (_, k) => k in params ? `<span class="param">${limpiar(params[k])}</span>` : `{${k}}`);
 }
 /* Convierte los datos crudos en lo que usa el lector */
-function derivar(d) {
+function derivar(d, conBorradores) {
   BLOQUES = Object.fromEntries((d.bloques || []).map(b => [b.id, b]));
-  PROCESOS = (d.procesos || []).map(p => ({ ...p, pasos: (p.pasos || []).map(s => ({ ...s, params: Object.fromEntries((s.params || []).map(x => [x.nombre, x.valor])) })) }));
+  let procs = d.procesos || [];
+  if (!conBorradores) {   // los lectores NO ven los procesos en borrador ni sus subprocesos
+    const ocultos = new Set(procs.filter(p => p.estado === "borrador").map(p => p.id));
+    procs = procs.filter(p => !ocultos.has(p.id) && !ocultos.has(p.padre));
+  }
+  PROCESOS = procs.map(p => ({ ...p, pasos: (p.pasos || []).map(s => ({ ...s, params: Object.fromEntries((s.params || []).map(x => [x.nombre, x.valor])) })) }));
 }
+const tagB = p => p.estado === "borrador" ? ' <span class="etq-b">BORRADOR</span>' : "";
 /* Borrador en el navegador (con protección por si el almacenamiento falla) */
 const leerBorrador = () => { try { return JSON.parse(localStorage.getItem(LLAVE)); } catch { return null; } };
 const guardarBorrador = () => { try { localStorage.setItem(LLAVE, JSON.stringify(D)); } catch {} };
@@ -191,7 +205,7 @@ function verMenu(area) {
     const propios = PROCESOS.filter(p => !p.padre && areaDe(p) === area.id);
     const hallados = propios.filter(p => (p.nombre + " " + p.resumen + " " + JSON.stringify(p.pasos)).toLowerCase().includes(q));
     lista.innerHTML = hallados.length
-      ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}"><strong>${limpiar(p.nombre)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
+      ? hallados.map(p => `<button class="proceso" data-id="${limpiar(p.id)}"><strong>${limpiar(p.nombre)}${tagB(p)}</strong><span>${limpiar(p.resumen)}</span></button>`).join("")
       : propios.length ? '<p class="vacio">No encontramos ese proceso. Prueba con otra palabra.</p>' : '<p class="vacio">Aún no hay procesos en esta área.</p>';
   }
   buscador.addEventListener("input", filtrar);
@@ -202,7 +216,7 @@ function verProceso(p) {
   const hijos = PROCESOS.filter(x => x.padre === p.id), padre = PROCESOS.find(x => x.id === p.padre);
   app.innerHTML = `
     <button class="volver" id="volver">‹ ${padre ? "Volver a " + limpiar(padre.nombre) : "Volver a " + limpiar(nombreArea(areaDe(p)))}</button>
-    <h2>${limpiar(p.nombre)}</h2><p class="sub">${limpiar(p.resumen)}</p>
+    <h2>${limpiar(p.nombre)}${tagB(p)}</h2><p class="sub">${limpiar(p.resumen)}</p>
     ${hijos.length ? `<h3>Subprocesos</h3><div class="lista" id="hijos">${hijos.map(h => `<button class="proceso" data-id="${limpiar(h.id)}"><strong>${limpiar(h.nombre)}</strong><span>${limpiar(h.resumen)}</span></button>`).join("")}</div>` : ""}
     <ol class="pasos">${p.pasos.map(pintarPaso).join("")}</ol>`;
   document.getElementById("volver").onclick = () => { location.hash = padre ? padre.id : "/" + areaDe(p); };
@@ -219,10 +233,10 @@ function navegar() {
   const enAdmin = id === "admin" || id === "editor", btnA = document.getElementById("btnAdmin");
   if (btnA) btnA.style.display = (enAdmin || verBorrador) ? "none" : "block";
   if (enAdmin) { poner(null); return acceso(); }
-  app.className = ""; derivar(verBorrador ? D : PUB);
+  app.className = ""; derivar(verBorrador ? D : PUB, verBorrador);
   if (verBorrador) {
     const b = document.createElement("div"); b.id = "banner"; b.className = "banner";
-    b.innerHTML = 'Vista previa del BORRADOR (no publicado) <button id="volEd">Volver al editor</button>';
+    b.innerHTML = 'Vista previa de tus cambios (incluye procesos en borrador, que los lectores NO ven) <button id="volEd">Volver al editor</button>';
     poner(b); b.querySelector("button").onclick = () => { verBorrador = false; location.hash = "editor"; };
   } else poner(null);
   if (id.startsWith("/")) { const a = AREAS.find(x => x.id === id.slice(1)); return a ? verMenu(a) : verAreas(); }
@@ -298,7 +312,11 @@ function autoIdBloque(b) {
   if (nuevo === b.id) return;
   D.procesos.forEach(p => p.pasos.forEach(st => { if (st.bloque === b.id) st.bloque = nuevo; })); b.id = nuevo; selBloque = nuevo;
 }
-function marcarSucio() { guardarBorrador(); actualizarBarra(); }
+function marcarSucio() {
+  guardarBorrador(); actualizarBarra();
+  const ins = document.getElementById("estadoProc");   // el indicador de estado se actualiza mientras escribes
+  if (ins && selProceso) { const p = D.procesos.find(x => x.id === selProceso); if (p) ins.replaceChildren(insignia(estadoProceso(p))); }
+}
 function mover(lista, i, d) { const j = i + d; if (j < 0 || j >= lista.length) return; [lista[i], lista[j]] = [lista[j], lista[i]]; marcarSucio(); }
 
 /* Validación de enlaces y datos (igual que en el servidor del módulo admin) */
@@ -314,20 +332,22 @@ function validar(d) {
   });
   d.procesos.forEach((p, i) => {
     const et = `Proceso ${i + 1}${p.id ? " (" + p.id + ")" : ""}`;
+    // Un proceso en BORRADOR puede estar incompleto: sus faltas son avisos y no impiden publicar lo demás
+    const enBorrador = p.estado === "borrador", dest = enBorrador ? avisos : errores, pre = enBorrador ? "[En borrador, no impide publicar] " : "";
     if (!p.id || !ID_OK.test(p.id)) errores.push(`${et}: el identificador debe usar solo letras sin tildes, números, guiones o guion bajo.`);
     else if (idsP.has(p.id)) errores.push(`${et}: identificador repetido.`);
     idsP.add(p.id);
-    if (!String(p.nombre || "").trim()) errores.push(`${et}: falta el nombre.`);
+    if (!String(p.nombre || "").trim()) dest.push(`${pre}${et}: falta el nombre.`);
     if (!AREAS.some(a => a.id === areaDe(p))) errores.push(`${et}: área desconocida.`);
-    if (!p.pasos.length) avisos.push(`${et}: no tiene pasos.`);
+    if (!p.pasos.length && !enBorrador) avisos.push(`${et}: no tiene pasos.`);
     p.pasos.forEach((s, j) => {
       const ep = `${et}, paso ${j + 1}`;
       if ("bloque" in s) {
         const b = d.bloques.find(x => x.id === s.bloque);
-        if (!b) errores.push(`${ep}: usa el bloque "${s.bloque}" que no existe.`);
-        else if (areaDe(b) !== areaDe(p)) errores.push(`${ep}: usa un paso común del área ${nombreArea(areaDe(b))}, pero este proceso es de ${nombreArea(areaDe(p))}. Cada área tiene sus propios pasos comunes.`);
-        else paramsDe(b).forEach(n => { if (!(s.params || []).some(x => x.nombre === n)) avisos.push(`${ep}: el bloque "${s.bloque}" necesita el valor de {${n}}.`); });
-      } else if (!String(s.titulo || "").trim()) errores.push(`${ep}: falta el título.`);
+        if (!b) dest.push(`${pre}${ep}: usa el bloque "${s.bloque}" que no existe.`);
+        else if (areaDe(b) !== areaDe(p)) dest.push(`${pre}${ep}: usa un paso común del área ${nombreArea(areaDe(b))}, pero este proceso es de ${nombreArea(areaDe(p))}. Cada área tiene sus propios pasos comunes.`);
+        else paramsDe(b).forEach(n => { if (!(s.params || []).some(x => x.nombre === n)) avisos.push(`${pre}${ep}: el bloque "${s.bloque}" necesita el valor de {${n}}.`); });
+      } else if (!String(s.titulo || "").trim()) dest.push(`${pre}${ep}: falta el título.`);
     });
   });
   d.procesos.forEach(p => {
@@ -338,6 +358,7 @@ function validar(d) {
   });
   return { errores, avisos };
 }
+
 function descargar(nombre, objeto) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(objeto, null, 2)], { type: "application/json" }));
@@ -408,7 +429,7 @@ async function publicarEnGithub() {
     for (const [ruta, mio, clave] of [["datos/bloques.json", PUB.bloques, "bloques"], ["datos/procesos.json", PUB.procesos, "procesos"]]) {
       const f = await gh("/contents/" + ruta + "?ref=" + rama);
       if (canon(JSON.parse(deBase64(f.content))[clave]) !== canon(mio))
-        throw Object.assign(new Error("Otra persona publicó cambios mientras editabas, y para no pisarlos no se publicó nada. Tu borrador sigue guardado. Avisa al responsable para revisar ambos cambios."), { codigo: "conflicto" });
+        throw Object.assign(new Error("Otra persona publicó cambios mientras editabas, y para no pisarlos no se publicó nada. Tus cambios siguen guardados en este navegador. Avisa al responsable para revisar ambos cambios."), { codigo: "conflicto" });
     }
     const archivos = [["datos/bloques.json", aBase64(JSON.stringify({ bloques: D.bloques }, null, 2) + "\n")], ["datos/procesos.json", aBase64(JSON.stringify({ procesos: D.procesos }, null, 2) + "\n")]];
     const nuevas = imagenesNuevas(); nuevas.forEach(r => archivos.push([r, IMGS[r].split(",")[1]]));
@@ -439,7 +460,7 @@ function vistaHerramientas(el) {
   });
   /* 2) Estandarizar todos los identificadores */
   const caja2 = h("div", { class: "tarjeta" }, h("h3", { style: "margin-top:0" }, "2. Estandarizar los identificadores existentes"),
-    h("p", { class: "nota" }, "Convierte todos los identificadores al formato automático (por ejemplo «Horas extras masivo» → ", h("code", {}, "horas_extras_masivo"), "). Los pasos y subprocesos se actualizan solos. Hazlo después de reparar los enlaces rotos (paso 1). Como es un cambio de borrador, puedes descartarlo antes de publicar. Los enlaces guardados a procesos con el nombre antiguo dejarán de funcionar."),
+    h("p", { class: "nota" }, "Convierte todos los identificadores al formato automático (por ejemplo «Horas extras masivo» → ", h("code", {}, "horas_extras_masivo"), "). Los pasos y subprocesos se actualizan solos. Hazlo después de reparar los enlaces rotos (paso 1). Mientras no publiques, puedes descartar el cambio. Los enlaces guardados a procesos con el nombre antiguo dejarán de funcionar."),
     h("button", { class: "b", onclick: () => {
       if (rotos.length && !confirm("Todavía hay pasos con bloques inexistentes (paso 1). Esos no se podrán actualizar solos. ¿Continuar de todos modos?")) return;
       const mapB = {}, mapP = {}; let usados = new Set();
@@ -510,12 +531,12 @@ function actualizarBarra() {
   const b = document.getElementById("barra"); if (!b) return;
   const cambios = hayCambios();
   b.replaceChildren(
-    h("span", { class: "estado" + (cambios ? " sucio" : "") }, cambios ? "● Borrador con cambios sin publicar" : "✓ Sin cambios"),
+    h("span", { class: "estado" + (cambios ? " sucio" : "") }, cambios ? "● Cambios sin publicar" : "✓ Todo publicado"),
     h("button", { class: "b", onclick: () => { const v = validar(D); mensajes = v.errores.length ? { err: { titulo: "Hay errores que corregir:", lista: v.errores }, av: v.avisos } : { ok: "No se encontraron errores.", av: v.avisos }; pintarEditor(); } }, "Revisar errores"),
     h("button", { class: "b", onclick: () => { verBorrador = true; location.hash = ""; navegar(); } }, "Ver cómo queda"),
     h("button", { class: "b pri", disabled: !cambios, onclick: publicarEnGithub }, "Publicar"),
     h("button", { class: "b", disabled: !cambios, onclick: publicar }, "Descargar archivos"),
-    h("button", { class: "b pel", disabled: !cambios, onclick: () => { if (confirm("¿Descartar todo el borrador y volver a lo publicado?")) { D = clonar(PUB); borrarBorrador(); IMGS = {}; try { localStorage.removeItem(LLAVE_IMG); } catch {} selProceso = selBloque = null; mensajes = { ok: "Borrador descartado." }; pintarEditor(); } } }, "Descartar borrador"));
+    h("button", { class: "b pel", disabled: !cambios, onclick: () => { if (confirm("¿Descartar todos los cambios sin publicar y volver a lo que está publicado?")) { D = clonar(PUB); borrarBorrador(); IMGS = {}; try { localStorage.removeItem(LLAVE_IMG); } catch {} selProceso = selBloque = null; mensajes = { ok: "Cambios descartados." }; pintarEditor(); } } }, "Descartar cambios"));
 }
 function publicar() {
   const v = validar(D);
@@ -535,7 +556,7 @@ function vistaAyuda(el) {
       h("li", {}, "En el repositorio, entra a la carpeta ", h("code", {}, "datos"), ", elige ", h("strong", {}, "Add file → Upload files"), ", sube los dos archivos (reemplazan a los anteriores) y confirma con ", h("strong", {}, "Commit changes"), "."),
       h("li", {}, "Si agregaste imágenes, también se descargaron. Entra a la carpeta ", h("code", {}, "img"), " del repositorio (importante: entra primero a la carpeta), elige ", h("strong", {}, "Add file → Upload files"), " y sube esas imágenes sin cambiarles el nombre."),
       h("li", {}, "Espera 1 o 2 minutos y recarga el manual: los cambios ya los ve todo el mundo.")),
-    h("p", { class: "nota" }, "Tu borrador se guarda solo en este navegador de este computador. Si cambias de computador antes de publicar, no estará. Una vez publicado, pulsa Descartar borrador o recarga para trabajar sobre lo nuevo.")));
+    h("p", { class: "nota" }, "Tus cambios sin publicar se guardan solo en este navegador de este computador. Si cambias de computador antes de publicar, no estarán; para guardar algo a medias y seguirlo desde otro equipo, ponlo en «Borrador» y pulsa Publicar. Una vez publicado, pulsa Descartar borrador o recarga para trabajar sobre lo nuevo.")));
 }
 
 function vistaSeguridad(el) {
@@ -583,6 +604,26 @@ function controlImagen(obj) {
 }
 
 /* ----- PROCESOS ----- */
+/* ===== Estado de cada proceso/bloque: ¿publicado, con cambios, nuevo o en borrador? ===== */
+let busquedaEd = "", busquedaBl = "", filtroEstado = "todos";
+const normaliza = t => String(t ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function estadoProceso(p) {
+  const orig = PUB.procesos.find(x => x.id === p.id);
+  if (p.estado === "borrador")
+    return { k: "borrador", txt: orig && orig.estado !== "borrador" ? "Borrador · se ocultará al publicar" : "Borrador · oculto a los lectores" };
+  if (!orig) return { k: "nuevo", txt: "Nuevo · sin publicar" };
+  if (orig.estado === "borrador") return { k: "nuevo", txt: "Se publicará por primera vez" };
+  return canon(orig) !== canon(p) ? { k: "cambios", txt: "Publicado · con cambios sin publicar" } : { k: "publicado", txt: "Publicado" };
+}
+function estadoBloque(b) {
+  const orig = PUB.bloques.find(x => x.id === b.id);
+  if (!orig) return { k: "nuevo", txt: "Nuevo · sin publicar" };
+  return canon(orig) !== canon(b) ? { k: "cambios", txt: "Publicado · con cambios sin publicar" } : { k: "publicado", txt: "Publicado" };
+}
+/* replaceChildren escribe «null» si recibe null y no abre listas: este ayudante las limpia */
+const reponer = (el, ...hijos) => el.replaceChildren(...hijos.flat(Infinity).filter(x => x != null && x !== false));
+const insignia = e => h("span", { class: "est e-" + e.k }, e.txt);
+
 function selectorArea(contar) {
   return h("div", {}, h("p", { class: "nota", style: "margin:0 0 4px" }, "Área que estás editando:"),
     h("div", { class: "tabs", style: "margin-bottom:12px" }, AREAS.map(a => h("button", { class: areaEd === a.id ? "activa" : "", onclick: () => { areaEd = a.id; selProceso = selBloque = null; pintarEditor(); } }, a.nombre + " (" + contar(a.id) + ")"))));
@@ -593,25 +634,53 @@ function vistaProcesos(el) {
   el.append(h("div", { class: "fila", style: "margin-bottom:12px" }, h("h3", { class: "crece", style: "margin:0" }, "Procesos de " + nombreArea(areaEd)),
     h("button", { class: "b pri", onclick: () => {
       const id = idUnico("nuevo_proceso", new Set(D.procesos.map(p => p.id)));
-      D.procesos.push({ id, nombre: "Nuevo proceso", area: areaEd, resumen: "", pasos: [] }); selProceso = id; marcarSucio(); pintarEditor();
+      D.procesos.push({ id, nombre: "Nuevo proceso", area: areaEd, estado: "borrador", resumen: "", pasos: [] });
+      selProceso = id; busquedaEd = ""; marcarSucio(); pintarEditor();
     } }, "+ Nuevo proceso")));
-  const delArea = x => areaDe(x) === areaEd, filas = [];
-  D.procesos.filter(p => !p.padre && delArea(p)).forEach(p => { filas.push(p); D.procesos.filter(x => x.padre === p.id).forEach(x => filas.push(x)); });
-  D.procesos.filter(p => p.padre && delArea(p) && !D.procesos.some(x => x.id === p.padre)).forEach(p => filas.push(p));
-  if (!filas.length) el.append(h("p", { class: "nota" }, "Aún no hay procesos en esta área. Pulsa «+ Nuevo proceso»."));
+  const buscador = h("input", { type: "search", value: busquedaEd, "aria-label": "Buscar", placeholder: "Buscar un proceso por su nombre o por una palabra de sus pasos (en todas las áreas)", oninput: e => { busquedaEd = e.target.value; dibujar(); } });
+  const chips = h("div", { class: "fila", style: "margin:10px 0" }), caja = h("div", {});
+  el.append(buscador, chips, caja);
   const hermano = (p, dir) => { const i = D.procesos.indexOf(p), r = dir < 0 ? D.procesos.slice(0, i).map((x, k) => [x, k]).reverse() : D.procesos.map((x, k) => [x, k]).slice(i + 1);
     return r.find(([x]) => x.padre === p.padre && areaDe(x) === areaDe(p)); };
-  filas.forEach(p => el.append(h("div", { class: "item" + (p.padre ? " hijo" : "") },
-    h("div", { class: "txt", onclick: () => { selProceso = p.id; pintarEditor(); } },
-      h("strong", {}, p.nombre, " ", p.padre ? h("span", { class: "etq" }, "subproceso") : null), h("span", {}, `${p.pasos.length} pasos · ${p.resumen || "sin resumen"}`)),
-    h("button", { class: "b mini", disabled: !hermano(p, -1), onclick: () => { const s = hermano(p, -1); mover(D.procesos, D.procesos.indexOf(p), s[1] - D.procesos.indexOf(p)); pintarEditor(); } }, "↑"),
-    h("button", { class: "b mini", disabled: !hermano(p, 1), onclick: () => { const s = hermano(p, 1); mover(D.procesos, D.procesos.indexOf(p), s[1] - D.procesos.indexOf(p)); pintarEditor(); } }, "↓"))));
+  function dibujar() {
+    const q = normaliza(busquedaEd);
+    const base = (q ? D.procesos : D.procesos.filter(x => areaDe(x) === areaEd))
+      .filter(p => !q || normaliza(p.nombre + " " + (p.resumen || "") + " " + p.pasos.map(s => (s.titulo || "") + " " + (s.texto || "")).join(" ")).includes(q));
+    const est = new Map(base.map(p => [p, estadoProceso(p)]));
+    const cuenta = k => k === "todos" ? base.length : base.filter(p => est.get(p).k === k).length;
+    chips.replaceChildren(...[["todos", "Todos"], ["publicado", "Publicados"], ["cambios", "Con cambios"], ["nuevo", "Nuevos"], ["borrador", "En borrador"]].map(([k, t]) =>
+      h("button", { class: "chip" + (filtroEstado === k ? " activa" : ""), onclick: () => { filtroEstado = k; dibujar(); } }, `${t} (${cuenta(k)})`)));
+    const jerarquia = !q && filtroEstado === "todos";
+    let filas = [];
+    if (jerarquia) {
+      base.filter(p => !p.padre).forEach(p => { filas.push(p); base.filter(x => x.padre === p.id).forEach(x => filas.push(x)); });
+      base.filter(p => p.padre && !base.some(x => x.id === p.padre)).forEach(p => filas.push(p));
+    } else filas = base.filter(p => filtroEstado === "todos" || est.get(p).k === filtroEstado);
+    const quitados = q ? [] : PUB.procesos.filter(x => areaDe(x) === areaEd && !D.procesos.some(y => y.id === x.id));
+    reponer(caja,
+      quitados.length ? h("div", { class: "caja-av" }, "Se quitarán del manual al publicar: " + quitados.map(x => x.nombre).join(", ")) : null,
+      !filas.length ? h("p", { class: "nota" }, q ? "No hay procesos que coincidan con la búsqueda." : filtroEstado === "todos" ? "Aún no hay procesos en esta área. Pulsa «+ Nuevo proceso»." : "No hay procesos con ese estado.") : null,
+      filas.map(p => h("div", { class: "item" + (jerarquia && p.padre ? " hijo" : "") },
+        h("div", { class: "txt", onclick: () => { areaEd = areaDe(p); selProceso = p.id; pintarEditor(); } },
+          h("strong", {}, p.nombre, " ", insignia(est.get(p)), " ", p.padre ? h("span", { class: "etq" }, "subproceso") : null, " ", !jerarquia ? h("span", { class: "etq" }, nombreArea(areaDe(p))) : null),
+          h("span", {}, `${p.pasos.length} pasos · ${p.resumen || "sin resumen"}`)),
+        jerarquia ? [
+          h("button", { class: "b mini", disabled: !hermano(p, -1), onclick: () => { const s = hermano(p, -1); mover(D.procesos, D.procesos.indexOf(p), s[1] - D.procesos.indexOf(p)); pintarEditor(); } }, "↑"),
+          h("button", { class: "b mini", disabled: !hermano(p, 1), onclick: () => { const s = hermano(p, 1); mover(D.procesos, D.procesos.indexOf(p), s[1] - D.procesos.indexOf(p)); pintarEditor(); } }, "↓")] : null)));
+  }
+  dibujar();
 }
+
 function editorProceso(el, p) {
   const hijos = D.procesos.filter(x => x.padre === p.id);
   el.append(h("button", { class: "b", onclick: () => { selProceso = null; pintarEditor(); } }, "‹ Volver a la lista"));
   const opcionesPadre = D.procesos.filter(x => x !== p && !x.padre && !hijos.includes(x) && areaDe(x) === areaDe(p));
   el.append(h("div", { class: "tarjeta", style: "margin-top:12px" },
+    h("label", {}, "Estado del proceso"),
+    h("p", { id: "estadoProc", style: "margin:2px 0 6px" }, insignia(estadoProceso(p))),
+    h("select", { value: p.estado === "borrador" ? "borrador" : "publicado", onchange: e => { if (e.target.value === "borrador") p.estado = "borrador"; else delete p.estado; marcarSucio(); pintarEditor(); } },
+      h("option", { value: "publicado" }, "Publicado (lo ven los lectores)"), h("option", { value: "borrador" }, "Borrador (guardado, pero oculto a los lectores)")),
+    h("p", { class: "nota" }, "Un proceso en borrador se guarda cuando pulsas «Publicar», pero los lectores no lo ven. Puedes dejarlo incompleto y seguir mañana, incluso desde otro computador. Cuando esté listo, cámbialo a «Publicado» y vuelve a publicar."),
     h("label", {}, "Nombre del proceso"), h("input", { value: p.nombre, oninput: e => { p.nombre = e.target.value; autoIdProceso(p); const c = document.getElementById("idint"); if (c) c.textContent = p.id; marcarSucio(); } }),
     h("label", {}, "Resumen (se ve en el menú)"), h("input", { value: p.resumen || "", oninput: e => { p.resumen = e.target.value; marcarSucio(); } }),
     h("label", {}, "Área"),
@@ -684,16 +753,23 @@ function vistaBloques(el) {
   el.append(h("div", { class: "fila", style: "margin-bottom:6px" }, h("h3", { class: "crece", style: "margin:0" }, "Pasos comunes de " + nombreArea(areaEd)),
     h("button", { class: "b pri", onclick: () => {
       const id = idUnico("nuevo_paso_comun", new Set(D.bloques.map(b => b.id)));
-      D.bloques.push({ id, area: areaEd, titulo: "Nuevo paso común", texto: "" }); selBloque = id; marcarSucio(); pintarEditor();
+      D.bloques.push({ id, area: areaEd, titulo: "Nuevo paso común", texto: "" }); selBloque = id; busquedaBl = ""; marcarSucio(); pintarEditor();
     } }, "+ Nuevo bloque")),
     h("p", { class: "nota" }, "Un bloque es un paso que se repite en varios procesos de esta misma área. Si lo cambias aquí, cambia en todos los que lo usan."));
-  const lista = D.bloques.filter(b => areaDe(b) === areaEd);
-  if (!lista.length) el.append(h("p", { class: "nota" }, "Aún no hay pasos comunes en esta área."));
-  const moverEn = (b, dir) => { const k = lista.indexOf(b), o = lista[k + dir]; if (!o) return; mover(D.bloques, D.bloques.indexOf(b), D.bloques.indexOf(o) - D.bloques.indexOf(b)); pintarEditor(); };
-  lista.forEach((b, i) => el.append(h("div", { class: "item" },
-    h("div", { class: "txt", onclick: () => { selBloque = b.id; pintarEditor(); } }, h("strong", {}, b.titulo), h("span", {}, `Usado ${usosBloque(b.id)} veces`)),
-    h("button", { class: "b mini", disabled: i === 0, onclick: () => moverEn(b, -1) }, "↑"),
-    h("button", { class: "b mini", disabled: i === lista.length - 1, onclick: () => moverEn(b, 1) }, "↓"))));
+  const buscador = h("input", { type: "search", value: busquedaBl, "aria-label": "Buscar", placeholder: "Buscar un paso común (en todas las áreas)", style: "margin-bottom:10px", oninput: e => { busquedaBl = e.target.value; dibujar(); } });
+  const caja = h("div", {}); el.append(buscador, caja);
+  function dibujar() {
+    const q = normaliza(busquedaBl);
+    const lista = (q ? D.bloques : D.bloques.filter(b => areaDe(b) === areaEd)).filter(b => !q || normaliza(b.titulo + " " + b.texto).includes(q));
+    const moverEn = (b, dir) => { const k = lista.indexOf(b), o = lista[k + dir]; if (!o) return; mover(D.bloques, D.bloques.indexOf(b), D.bloques.indexOf(o) - D.bloques.indexOf(b)); pintarEditor(); };
+    reponer(caja,
+      !lista.length ? h("p", { class: "nota" }, q ? "No hay pasos comunes que coincidan con la búsqueda." : "Aún no hay pasos comunes en esta área.") : null,
+      lista.map((b, i) => h("div", { class: "item" },
+        h("div", { class: "txt", onclick: () => { areaEd = areaDe(b); selBloque = b.id; pintarEditor(); } },
+          h("strong", {}, b.titulo, " ", insignia(estadoBloque(b)), " ", q ? h("span", { class: "etq" }, nombreArea(areaDe(b))) : null), h("span", {}, `Usado ${usosBloque(b.id)} veces`)),
+        !q ? [h("button", { class: "b mini", disabled: i === 0, onclick: () => moverEn(b, -1) }, "↑"), h("button", { class: "b mini", disabled: i === lista.length - 1, onclick: () => moverEn(b, 1) }, "↓")] : null)));
+  }
+  dibujar();
 }
 function editorBloque(el, b) {
   const usos = D.procesos.filter(p => p.pasos.some(s => s.bloque === b.id));
