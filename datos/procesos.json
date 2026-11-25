@@ -1042,11 +1042,38 @@
     },
     {
       "id": "nuevo_proceso",
-      "nombre": "Nuevo proceso",
+      "nombre": "Horas Extras Pactadas Carguesa",
       "area": "nomina",
       "estado": "borrador",
-      "resumen": "",
-      "pasos": []
+      "resumen": "Este proceso tiene como objetivo registrar en SIPE las novedades correspondientes a Horas Extras Pactadas para los colaboradores que cuentan con este beneficio, garantizando el cálculo proporcional cuando el colaborador no haya laborado la totalidad del período de nómina. Este beneficio aplica únicamente para los conductores de Carguesa.",
+      "pasos": [
+        {
+          "titulo": "Recepción y validación de la información",
+          "texto": "Abrir el archivo Nómina - Carga y Paquete S.A.S. recibido por correo electrónico.\n\nIdentificar los colaboradores que tienen asignado el beneficio de Horas Extras Pactadas y verificar que la información corresponda al período de nómina que se encuentra en proceso.\n\nPunto de control: validar que los colaboradores incluidos en el archivo tengan asignado el beneficio de Horas Extras Pactadas para el período correspondiente. "
+        },
+        {
+          "titulo": "Preparación de la información",
+          "texto": " Ocultar las columnas que no serán utilizadas en el proceso, conservando únicamente las columnas necesarias para la identificación del colaborador y el cálculo de la novedad, como se muestra en la imagen de referencia.\nPunto de control: verificar que la información requerida para el cálculo permanezca visible antes de continuar con el proceso.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-25-075625-dmv0.webp"
+        },
+        {
+          "titulo": "Cálculo del valor a registrar",
+          "texto": "Las Horas Extras Pactadas se registran utilizando el concepto 050.\nEl valor mensual establecido para este beneficio es de $607.500.\nCuando el colaborador no haya laborado la totalidad del período, se debe calcular el valor proporcional según los días trabajados durante dicho período.\nEjemplo:\nSi un colaborador laboró desde el 17 de noviembre hasta el 30 de noviembre, tendrá un total de 14 días trabajados dentro del período de nómina.\nEn este caso, se debe aplicar el cálculo proporcional correspondiente sobre el valor mensual de $607.500, utilizando la fórmula definida por la compañía.\n\n607.500/30*14 dias trabajados=283.500\n\nPunto de control: verificar que el valor calculado corresponda a los días efectivamente laborados por el colaborador durante el período."
+        },
+        {
+          "bloque": "registroManualSIPE",
+          "params": [
+            {
+              "nombre": "concepto",
+              "valor": "050"
+            }
+          ]
+        },
+        {
+          "titulo": "",
+          "texto": ""
+        }
+      ]
     }
   ]
 }
