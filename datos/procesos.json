@@ -1129,6 +1129,106 @@
           ]
         }
       ]
+    },
+    {
+      "id": "retiro_liquidacion",
+      "nombre": "Retiro-liquidación",
+      "area": "nomina",
+      "resumen": "objetivo gestionar el retiro de los colaboradores y realizar la liquidación definitiva de prestaciones sociales, garantizando el cierre de la vinculación laboral, la validación de novedades pendientes y la generación de los documentos requeridos para la finalización del contrato.",
+      "pasos": [
+        {
+          "titulo": "Recepción de la notificación de retiro",
+          "texto": "Recibir el correo electrónico mediante el cual se informa el retiro del colaborador, incluyendo la fecha efectiva de retiro y el motivo de la desvinculación."
+        },
+        {
+          "titulo": "Gestión del Paz y Salvo",
+          "texto": "Solicitar el Paz y Salvo a las áreas involucradas:\n•\tTecnología.\n•\tContabilidad.\n•\tRestaurante.\n•\tFondo de Empleados.\n"
+        },
+        {
+          "titulo": "Registro del retiro en SIPE",
+          "texto": "Ingresar a la ruta:\nARCHIVOS > NÓMINA > VINCULACIONES\nRegistrar la cédula del colaborador y seleccionar la opción Traer vinculación.\nActualizar la siguiente información:\n•\tFecha final de vinculación.\n•\tMotivo del retiro.\nPara el motivo del retiro, seleccionar la opción Fin Vinculación y posteriormente guardar los cambios.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: verificar que la fecha final registrada coincida con la fecha efectiva de retiro reportada."
+            }
+          ],
+          "imagen": "img/image-png-15-t58r.webp"
+        },
+        {
+          "titulo": "Generación del subperíodo de liquidación",
+          "texto": "Crear un subperíodo independiente para procesar la liquidación del colaborador fuera de la nómina general.\nIngresar a la ruta:\nLIQUIDACIÓN > CONTROL DE PAGO\nSeleccionar la opción Liquidación para generar el comprobante preliminar del colaborador.\nEste comprobante permitirá visualizar los conceptos que serán considerados durante la liquidación.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: verificar que el colaborador se encuentre incluido en el subperíodo correspondiente."
+            }
+          ],
+          "imagen": "img/image-png-16-uomt.webp"
+        },
+        {
+          "titulo": "Validación de novedades pendientes",
+          "texto": "Revisar si el colaborador presenta novedades pendientes que puedan impactar la liquidación, tales como:\n•\tHoras extras.\n•\tAuxilio de movilidad.\n•\tBonificaciones.\n•\tIncapacidades.\n•\tPermisos no remunerados.\n•\tDescuentos de restaurante.\n•\tOtras novedades pendientes de aplicación.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: confirmar que todas las novedades se encuentren registradas antes de generar la liquidación definitiva."
+            }
+          ]
+        },
+        {
+          "titulo": "Validaciones previas a la liquidación",
+          "texto": "Antes de generar la liquidación definitiva, verificar las condiciones particulares del caso.",
+          "notas": [
+            {
+              "tipo": "importante",
+              "texto": "Nota: Cuando la liquidación corresponda a la primera quincena del mes, el valor del auxilio de transporte deberá registrarse manualmente, cuando aplique."
+            }
+          ]
+        },
+        {
+          "titulo": "Generación de la liquidación definitiva",
+          "texto": "Ingresar a la ruta:\nTRANSACCIONES > LIQUIDACIÓN DEFINITIVA DE PRESTACIONES\nTodas las liquidaciones deben procesarse inicialmente en el Subproceso 99, con el fin de realizar una validación previa antes de actualizar la información.\nBuscar al colaborador mediante la opción de consulta e iniciar el proceso de liquidación.\nTener en cuenta las siguientes consideraciones:\n•\tEn caso de renuncia, no se debe registrar indemnización.\n•\tEn caso de despido, se debe incluir la indemnización correspondiente.\nUna vez diligenciada la información, seleccionar Liquidación Definitiva y posteriormente generar el Reporte de Liquidación Definitiva para su revisión.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: verificar que los valores calculados coincidan con la información del colaborador antes de continuar con la actualización."
+            }
+          ],
+          "imagen": "img/image-png-17-cm5w.webp"
+        },
+        {
+          "titulo": "Actualización de liquidación",
+          "texto": "Después de validar la información generada, cambiar el modo de ejecución de Validación a Actualización.\nSeleccionar nuevamente la opción Liquidación Definitiva para registrar definitivamente los valores en nómina\n"
+        },
+        {
+          "titulo": "Reliquidación del subperíodo",
+          "texto": "Una vez registradas las novedades de liquidación, ejecutar nuevamente la liquidación del subperíodo correspondiente para asegurar que toda la información sea tomada correctamente por el sistema.\nSeleccionar la opción Liquidación y esperar la finalización del proceso.\n",
+          "imagen": "img/captura-de-pantalla-2026-11-26-114220-i86y.webp"
+        },
+        {
+          "titulo": "Verificación de la liquidación",
+          "texto": "Ingresar a la opción:\nNÓMINA LIQUIDADA/PAGADA\nRevisar el comprobante generado y validar que los valores liquidados correspondan a la información del colaborador.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: confirmar que los pagos, deducciones y prestaciones liquidadas sean correctos antes de generar el acta final.\n\n"
+            }
+          ],
+          "imagen": "img/captura-de-pantalla-2026-11-26-114613-g833.webp"
+        },
+        {
+          "titulo": "Generación del acta de liquidación",
+          "texto": "Ingresar a la ruta:\nREPORTES > TRANSACCIONES > LIQUIDACIÓN DEFINITIVA DE PRESTACIONES\nCompletar los criterios de consulta correspondientes al período procesado y seleccionar Aceptar.\nEl sistema generará el acta de liquidación del colaborador.\nPara descargar el documento:\nFILE > GENERATE TO FILE > PDF\nEl archivo PDF se almacenará en la carpeta de SIPE correspondiente al auxiliar de nómina.\nPosteriormente, trasladar el documento a la carpeta del colaborador junto con los soportes del Paz y Salvo.\n",
+          "notas": [
+            {
+              "tipo": "aclaracion",
+              "texto": "Punto de control: verificar que el acta se haya generado correctamente y que el PDF quede almacenado en la carpeta documental del colaborador.\n\n"
+            }
+          ],
+          "imagen": "img/captura-de-pantalla-2026-11-26-114828-v7qy.webp"
+        }
+      ]
     }
   ]
 }
