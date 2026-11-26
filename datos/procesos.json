@@ -1080,7 +1080,6 @@
       "id": "registro_incapacidades",
       "nombre": "Registro incapacidades",
       "area": "nomina",
-      "estado": "borrador",
       "resumen": ": Este proceso tiene como objetivo registrar en SIPE las incapacidades reportadas por los colaboradores, garantizando que la información registrada coincida con los soportes médicos recibidos y que la novedad quede correctamente aplicada en nómina.",
       "pasos": [
         {
