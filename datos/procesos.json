@@ -9,15 +9,15 @@
           "texto": "Descargar los archivos de horas laboradas de Antioquia y Cartagena."
         },
         {
-          "titulo": "Preparar información",
-          "texto": "Bloquear las fechas ya procesadas en cada archivo y consolidar la información en un archivo de trabajo.",
           "bloque": "buscarv",
           "params": [
             {
               "nombre": "columna",
               "valor": "Estado del colaborador"
             }
-          ]
+          ],
+          "titulo": "Validación de colaboradores mediante BUSCARV: {columna}",
+          "texto": "Crear las columnas donde se mostrará la información a consultar.\n\n1. Insertar la función BUSCARV.\n2. Configurar los parámetros:\n   - Valor buscado: cédula del colaborador.\n   - Matriz de búsqueda: base de datos general.\n   - Indicador de columna: el que corresponda a {columna}.\n   - Coincidencia: FALSO.\n3. Arrastrar la fórmula hasta el último registro.\n4. Verificar que todos los registros retornen información válida.\n5. Aplicar filtros para identificar posibles errores o registros sin coincidencias.\n6. Realizar la validación correspondiente según el dato consultado."
         },
         {
           "bloque": "buscarv",
@@ -33,8 +33,6 @@
           ]
         },
         {
-          "titulo": "Filtrar valores de pago",
-          "texto": "Filtrar los registros cuyo valor de pago sea diferente de cero.",
           "bloque": "buscarv",
           "params": [
             {
