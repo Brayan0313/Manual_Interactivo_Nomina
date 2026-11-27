@@ -588,7 +588,9 @@ function vistaPublicacion(el) {
       h("p", { class: "nota" }, "El token es como una contraseña: no lo compartas ni lo pegues en el manual ni en archivos. Si crees que se filtró, bórralo en GitHub y crea otro.")));
 }
 
+let vistaPrevia = null;   // qué pantalla del editor se veía; si no cambia, se conserva la posición
 function pintarEditor() {
+  const clave = pestana + "|" + selProceso + "|" + selBloque, y = clave === vistaPrevia ? window.scrollY : 0; vistaPrevia = clave;
   const cuerpo = h("div", {});
   const tabs = h("div", { class: "tabs" }, [["procesos", "Procesos"], ["bloques", "Pasos comunes (bloques)"], ["ayuda", "Cómo publicar"], ["herramientas", "Herramientas"], ["publicacion", "Publicación"], ["seguridad", "Clave de administrador"]]
     .map(([k, t]) => h("button", { class: pestana === k ? "activa" : "", onclick: () => { pestana = k; mensajes = {}; pintarEditor(); } }, t)));
@@ -601,7 +603,7 @@ function pintarEditor() {
   cuerpo.append(...cajas());
   ({ procesos: vistaProcesos, bloques: vistaBloques, ayuda: vistaAyuda, seguridad: vistaSeguridad, publicacion: vistaPublicacion, herramientas: vistaHerramientas })[pestana](cuerpo);
   actualizarBarra();
-  window.scrollTo(0, 0);
+  window.scrollTo(0, y);
 }
 function cajas() {
   const l = [];
