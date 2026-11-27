@@ -195,27 +195,32 @@ function crearBotonAdmin() {
 
 /* ================= LECTOR ================= */
 function pintarPaso(paso) {
+  const prm = paramsEfectivos(paso);
   let titulo, texto, imagen = "", etiqueta = "";
   if (paso.bloque) {
     const b = BLOQUES[paso.bloque];
     if (!b) return `<li><h3>Falta el bloque: ${limpiar(paso.bloque)}</h3><p>Revisa que este bloque exista, escrito igual.</p></li>`;
-    titulo = rellenar(b.titulo, paso.params); texto = rellenar(b.texto, paso.params);
+    titulo = rellenar(paso.titulo || b.titulo, prm); texto = rellenar(paso.texto || b.texto, prm);   // texto propio del paso, si lo tiene
     imagen = paso.imagen || b.imagen || ""; etiqueta = '<span class="comun">Paso común a varios procesos</span>';
   } else {
     titulo = rellenar(paso.titulo, paso.params); texto = rellenar(paso.texto, paso.params); imagen = paso.imagen || "";
   }
   const media = imagen ? `<img class="imagen" src="${limpiar(srcImg(imagen))}" alt="Captura del paso">` : "";
   const notas = [...(paso.bloque ? (BLOQUES[paso.bloque]?.notas || []) : []), ...(paso.notas || [])]   // primero las del bloque, luego las propias de este proceso
-    .map(n => `<div class="aviso ${n.tipo === "importante" ? "aviso-imp" : "aviso-acl"}"><b>${n.tipo === "importante" ? "Importante" : "Nota"}</b>${rellenar(n.texto, paso.params)}</div>`).join("");
+    .map(n => `<div class="aviso ${n.tipo === "importante" ? "aviso-imp" : "aviso-acl"}"><b>${n.tipo === "importante" ? "Importante" : "Nota"}</b>${rellenar(n.texto, prm)}</div>`).join("");
   return `<li><h3>${titulo}</h3><p>${texto}</p>${notas}${media}${etiqueta}</li>`;
 }
 /* ===== BÚSQUEDA: por nombre y por palabras dentro de los pasos (incluye el texto de los pasos comunes) ===== */
+/* Cada bloque puede definir sus datos variables con una etiqueta clara y un valor por defecto:
+   parametros: [{ nombre, etiqueta, defecto }]. El paso solo escribe el valor si quiere cambiar el defecto. */
+const defectosDe = b => Object.fromEntries((b?.parametros || []).filter(x => x.defecto).map(x => [x.nombre, x.defecto]));
+const paramsEfectivos = s => s.bloque ? { ...defectosDe(BLOQUES[s.bloque]), ...(s.params || {}) } : (s.params || {});
 const textoPlano = (t, params = {}) => String(t ?? "").replace(/\{(\w+)\}/g, (_, k) => k in params ? params[k] : "");
 function piezasProceso(p) {
   const piezas = [{ donde: "", texto: p.nombre }, { donde: "", texto: p.resumen || "" }];
   p.pasos.forEach((s, i) => {
-    const b = s.bloque ? BLOQUES[s.bloque] : s; if (!b) return;
-    piezas.push({ donde: "Paso " + (i + 1), texto: textoPlano(b.titulo, s.params) + ". " + textoPlano(b.texto, s.params) + [...(b.notas || []), ...(s.bloque ? s.notas || [] : [])].map(n => ". " + textoPlano(n.texto, s.params)).join("") });
+    const b = s.bloque ? BLOQUES[s.bloque] : s; if (!b) return; const prm = paramsEfectivos(s);
+    piezas.push({ donde: "Paso " + (i + 1), texto: textoPlano(s.titulo || b.titulo, prm) + ". " + textoPlano(s.texto || b.texto, prm) + [...(b.notas || []), ...(s.bloque ? s.notas || [] : [])].map(n => ". " + textoPlano(n.texto, prm)).join("") });
   });
   return piezas;
 }
@@ -424,7 +429,7 @@ function validar(d) {
         const b = d.bloques.find(x => x.id === s.bloque);
         if (!b) dest.push(`${pre}${ep}: usa el bloque "${s.bloque}" que no existe.`);
         else if (areaDe(b) !== areaDe(p)) dest.push(`${pre}${ep}: usa un paso común del área ${nombreArea(areaDe(b))}, pero este proceso es de ${nombreArea(areaDe(p))}. Cada área tiene sus propios pasos comunes.`);
-        else paramsDe(b).forEach(n => { if (!(s.params || []).some(x => x.nombre === n)) avisos.push(`${pre}${ep}: el bloque "${s.bloque}" necesita el valor de {${n}}.`); });
+        else paramsDe({ titulo: s.titulo || b.titulo, texto: s.texto || b.texto }).forEach(n => { if (!(s.params || []).some(x => x.nombre === n) && !defectosDe(b)[n]) avisos.push(`${pre}${ep}: el bloque "${s.bloque}" necesita el valor de {${n}}.`); });
       } else if (!String(s.titulo || "").trim()) dest.push(`${pre}${ep}: falta el título.`);
     });
   });
@@ -656,6 +661,29 @@ function vistaSeguridad(el) {
 }
 
 /* ----- imagen: ruta escrita (las imágenes se suben a la carpeta img del repositorio) ----- */
+function cajaParametros(b) {
+  const caja = h("div", { id: "cajaParams" });
+  const dibujar = () => {
+    const nombres = paramsDe(b);
+    reponer(caja, h("label", {}, "Datos que cambian en cada uso (parámetros)"),
+      !nombres.length ? h("p", { class: "nota" }, "Este bloque no tiene datos variables. Para crear uno, escribe su nombre entre llaves en el título o en las instrucciones, por ejemplo {matriz}.")
+        : h("p", { class: "nota" }, "Para cada dato, escribe cómo se llamará el campo que verá quien edita un proceso y, si quieres, el valor que se usará siempre que no lo cambien."),
+      nombres.map(n => {
+        const m = (b.parametros || []).find(x => x.nombre === n) || {};
+        const guardar = (campo, v) => {
+          b.parametros = b.parametros || []; let x = b.parametros.find(y => y.nombre === n);
+          if (!x) { x = { nombre: n }; b.parametros.push(x); }
+          if (v) x[campo] = v; else delete x[campo];
+          if (!x.etiqueta && !x.defecto) b.parametros = b.parametros.filter(y => y !== x);
+          if (!b.parametros.length) delete b.parametros; marcarSucio();
+        };
+        return h("div", { class: "nota-ed nota-ed-acl" }, h("div", { class: "fila", style: "margin-bottom:4px" }, h("span", { class: "param" }, "{" + n + "}")),
+          h("label", {}, "Nombre del campo"), h("input", { value: m.etiqueta || "", placeholder: "Ejemplo: Valor buscado", oninput: e => guardar("etiqueta", e.target.value.trim()) }),
+          h("label", {}, "Valor por defecto (opcional)"), h("input", { value: m.defecto || "", placeholder: "Ejemplo: cédula del colaborador", oninput: e => guardar("defecto", e.target.value.trim()) }));
+      }));
+  };
+  caja.refrescar = dibujar; dibujar(); return caja;
+}
 function controlNotas(obj) {
   const caja = h("div", {});
   const dibujar = () => {
@@ -794,7 +822,7 @@ function editorProceso(el, p) {
 function tarjetaPaso(p, s, i) {
   const esBloque = "bloque" in s;
   const caja = h("div", { class: "tarjeta paso" + (esBloque ? " esbloque" : "") },
-    h("div", { class: "fila" }, h("span", { class: "num" }, "Paso " + (i + 1)), esBloque ? h("span", { class: "etq r" }, "paso común") : h("span", { class: "etq" }, "paso propio"), h("span", { class: "crece" }),
+    h("div", { class: "fila" }, h("span", { class: "num" }, "Paso " + (i + 1)), esBloque ? h("span", { class: "etq r" }, ("texto" in s || "titulo" in s) ? "paso común · texto propio" : "paso común") : h("span", { class: "etq" }, "paso propio"), h("span", { class: "crece" }),
       h("button", { class: "b mini", disabled: i === 0, onclick: () => { mover(p.pasos, i, -1); pintarEditor(); } }, "↑"),
       h("button", { class: "b mini", disabled: i === p.pasos.length - 1, onclick: () => { mover(p.pasos, i, 1); pintarEditor(); } }, "↓"),
       h("button", { class: "b mini pel", onclick: () => { if (!confirm("¿Eliminar este paso?")) return; p.pasos.splice(i, 1); marcarSucio(); pintarEditor(); } }, "Eliminar")));
@@ -809,24 +837,45 @@ function tarjetaPaso(p, s, i) {
   } else {
     const b = D.bloques.find(x => x.id === s.bloque);
     caja.append(h("label", {}, "Bloque a usar"),
-      h("select", { value: s.bloque, onchange: e => { s.bloque = e.target.value; s.params = []; marcarSucio(); pintarEditor(); } },
+      h("select", { value: s.bloque, onchange: e => { s.bloque = e.target.value; s.params = []; delete s.titulo; delete s.texto; marcarSucio(); pintarEditor(); } },
         !b ? h("option", { value: s.bloque }, `(no existe: ${s.bloque})`) : null, D.bloques.filter(x => areaDe(x) === areaDe(p) || x.id === s.bloque).map(x => h("option", { value: x.id }, x.titulo))));
     if (b) {
-      caja.append(h("p", { class: "nota" }, "Texto del bloque: ", b.texto.slice(0, 160) + (b.texto.length > 160 ? "…" : "")));
-      s.params = s.params || []; const nec = paramsDe(b);
-      nec.forEach(n => caja.append(h("label", {}, "Valor para ", h("span", { class: "param" }, `{${n}}`)),
-        h("input", { value: s.params.find(x => x.nombre === n)?.valor || "", oninput: e => {
-          const f = s.params.find(x => x.nombre === n);
-          if (e.target.value === "") s.params = s.params.filter(x => x.nombre !== n); else if (f) f.valor = e.target.value; else s.params.push({ nombre: n, valor: e.target.value });
-          marcarSucio();
-        } })));
-      if (!nec.length) caja.append(h("p", { class: "nota" }, "Este bloque no tiene valores variables."));
+      s.params = s.params || [];
+      const personal = "texto" in s || "titulo" in s;            // ¿este paso tiene un texto propio, distinto del bloque?
+      const efectivo = () => ({ titulo: s.titulo ?? b.titulo, texto: s.texto ?? b.texto });
+      const cajaPar = h("div", {}), pre = h("pre", { style: "white-space:pre-wrap;font:inherit;margin:6px 0 0;padding:8px 10px;background:var(--fondo);border-radius:8px" });
+      const vista = h("details", { style: "margin:10px 0" }, h("summary", { style: "cursor:pointer;font-weight:600;color:var(--titulo)" }, "Ver el texto completo de este paso"), pre);
+      const refrescarVista = () => {   // texto final tal como lo verá el lector (con los datos ya puestos)
+        const prm = { ...defectosDe(b), ...Object.fromEntries(s.params.map(x => [x.nombre, x.valor])) }, e = efectivo(), rep = t => String(t ?? "").replace(/\{(\w+)\}/g, (m, n) => n in prm ? prm[n] : m);
+        pre.textContent = rep(e.titulo) + "\n\n" + rep(e.texto);
+      };
+      const dibujarPar = () => {
+        const nec = paramsDe(efectivo());
+        reponer(cajaPar, nec.length ? h("p", { class: "nota", style: "margin:10px 0 0" }, "Solo estos datos cambian en cada proceso:") : h("p", { class: "nota" }, "Este paso no tiene datos para llenar."),
+          nec.map(n => { const meta = (b.parametros || []).find(x => x.nombre === n) || {};
+            return [meta.etiqueta ? h("label", {}, meta.etiqueta) : h("label", {}, "Valor para ", h("span", { class: "param" }, `{${n}}`)),
+              h("input", { value: s.params.find(x => x.nombre === n)?.valor || "", placeholder: meta.defecto ? "Por defecto: " + meta.defecto + " (déjalo vacío para usarlo)" : "", oninput: e => {
+                const f = s.params.find(x => x.nombre === n);
+                if (e.target.value === "") s.params = s.params.filter(x => x.nombre !== n); else if (f) f.valor = e.target.value; else s.params.push({ nombre: n, valor: e.target.value });
+                marcarSucio(); refrescarVista();
+              } })]; }));
+        refrescarVista();
+      };
+      caja.append(cajaPar, vista);
+      dibujarPar();
+      if (!personal) caja.append(h("p", { style: "margin:4px 0" }, h("button", { class: "b mini", onclick: () => { s.titulo = b.titulo; s.texto = b.texto; marcarSucio(); pintarEditor(); } }, "Personalizar el texto solo en este proceso")),
+        h("p", { class: "nota", style: "margin-top:0" }, "Úsalo si en este proceso necesitas explicar algo distinto. El texto del bloque se copia aquí para que lo adaptes; los demás procesos no cambian."));
+      else {
+        const ta = h("textarea", { style: "min-height:140px", oninput: e => { s.texto = e.target.value; marcarSucio(); dibujarPar(); } }); ta.value = s.texto ?? b.texto;
+        caja.append(h("div", { class: "nota-ed nota-ed-imp" },
+          h("p", { class: "nota", style: "margin:0 0 4px" }, "Este paso usa un texto propio de este proceso. Si luego cambias el bloque original, este texto no se actualiza."),
+          h("label", {}, "Título (solo en este proceso)"), h("input", { value: s.titulo ?? b.titulo, oninput: e => { s.titulo = e.target.value; marcarSucio(); dibujarPar(); } }),
+          h("label", {}, "Instrucciones (solo en este proceso)"), ta,
+          h("p", { class: "nota" }, "Puedes seguir usando datos entre llaves, por ejemplo {matriz}."),
+          h("button", { class: "b mini", onclick: () => { if (!confirm("¿Volver al texto original del bloque? Se perderá el texto propio de este paso.")) return; delete s.titulo; delete s.texto; marcarSucio(); pintarEditor(); } }, "Volver al texto del bloque")));
+      }
     }
-    caja.append(controlNotas(s), controlImagen(s), h("p", {}, h("button", { class: "b mini", onclick: () => {
-      const b2 = D.bloques.find(x => x.id === s.bloque), rep = t => t.replace(/\{(\w+)\}/g, (_, n) => s.params.find(x => x.nombre === n)?.valor ?? `{${n}}`);
-      const img = s.imagen, titulo = b2 ? rep(b2.titulo) : "", texto = b2 ? rep(b2.texto) : "", notas = [...(b2?.notas || []), ...(s.notas || [])].map(n => ({ ...n, texto: rep(n.texto) }));
-      Object.keys(s).forEach(k => delete s[k]); s.titulo = titulo; s.texto = texto; if (notas.length) s.notas = notas; if (img) s.imagen = img; marcarSucio(); pintarEditor();
-    } }, "Convertir en paso propio (copia el texto)")));
+    caja.append(controlNotas(s), controlImagen(s));
   }
   return caja;
 }
@@ -858,13 +907,13 @@ function vistaBloques(el) {
 }
 function editorBloque(el, b) {
   const usos = D.procesos.filter(p => p.pasos.some(s => s.bloque === b.id));
-  const ta = h("textarea", { oninput: e => { b.texto = e.target.value; marcarSucio(); } }); ta.value = b.texto || "";
+  const ta = h("textarea", { oninput: e => { b.texto = e.target.value; marcarSucio(); const cp = document.getElementById("cajaParams"); if (cp && cp.refrescar) cp.refrescar(); } }); ta.value = b.texto || "";
   el.append(h("button", { class: "b", onclick: () => { selBloque = null; pintarEditor(); } }, "‹ Volver a la lista"),
     h("div", { class: "tarjeta", style: "margin-top:12px" },
-      h("label", {}, "Título del paso"), h("input", { value: b.titulo, oninput: e => { b.titulo = e.target.value; autoIdBloque(b); const c = document.getElementById("idint"); if (c) c.textContent = b.id; marcarSucio(); } }),
+      h("label", {}, "Título del paso"), h("input", { value: b.titulo, oninput: e => { b.titulo = e.target.value; autoIdBloque(b); const c = document.getElementById("idint"); if (c) c.textContent = b.id; marcarSucio(); const cp = document.getElementById("cajaParams"); if (cp && cp.refrescar) cp.refrescar(); } }),
       h("label", {}, "Instrucciones"), ta,
       h("p", { class: "nota" }, "Para valores que cambian en cada proceso escribe el nombre entre llaves, por ejemplo ", h("code", {}, "{archivo}"), ". Cada proceso que use el bloque indicará el valor."),
-      controlNotas(b), controlImagen(b), h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, b.id))),
+      cajaParametros(b), controlNotas(b), controlImagen(b), h("p", { class: "nota" }, "Identificador interno (automático, no necesitas tocarlo): ", h("code", { id: "idint" }, b.id))),
     h("h3", {}, "Procesos que usan este bloque"), usos.length ? h("ul", {}, usos.map(p => h("li", {}, p.nombre))) : h("p", { class: "nota" }, "Ninguno todavía."),
     h("hr", { style: "margin:26px 0 14px;border:0;border-top:1px solid var(--linea)" }),
     h("button", { class: "b pel", onclick: () => {
